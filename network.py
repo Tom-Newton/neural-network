@@ -9,23 +9,25 @@ class Network:
     def get_derivatives(self):
         derivatives = []
         for layer in self.data:
-            derivatives.append([lambda y, X_tilde: 0]*len(layer))
+            derivatives.append([lambda y: 0]*len(layer))
 
         # stem is a function of y
-        # derivatives are functions of y and X_tilde
-        # y is relervant from the first stem. X_tilde only becomes relervant at the end
+        # derivatives are functions of y the X_tilde s and the w s. X_dilde s
+        # and w s are stored in the neuron objects. This makes the derivatives
+        # functions of only y.
 
-        def differentiate(network_data, stem=lambda y: (y - network_data[0][0].output), i=0, j=0):
+        def differentiate(network_data, stem=lambda y: (y - self.data[0][0].output), i=0, j=0):
             neuron = network_data[i][j]
-            derivatives[i][j] = lambda y, X_tilde: derivatives[i][j](
-                y, X_tilde) + np.matmul(X_tilde.T, stem(y))
+            old_derivative = derivatives[i][j]
+
+            derivatives[i][j] = lambda y: old_derivative(y) + np.dot(self.data[i][j].X_tilde.T, stem(y))
 
             for input_location in neuron.input_locations:
                 if type(input_location) == tuple:
                     def new_stem(y):
-                        output = network_data[input_location[0]
-                                         ][input_location[1]].output
-                        return stem(y)*neuron.w[input_location[1] + 1]*output*(np.ones(y.shape) - output)
+                        output = self.data[input_location[0]
+                                           ][input_location[1]].output
+                        return stem(y)*self.data[i][j].w[input_location[1] + 1]*output*(np.ones(y.shape) - output)
 
                     differentiate(network_data, new_stem,
                                   input_location[0], input_location[1])

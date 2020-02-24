@@ -14,8 +14,13 @@ class Tests(unittest.TestCase):
         self.X = np.array([[1, 3],
                            [2, 4]])
 
+        self.y = np.array([3, 2])
+
     def test_get_differentials(self):
-        self.network.get_derivatives()
+        derivatives = self.network.get_derivatives()
+        self.network.update_network(self.X)
+        derivatives[2][0](self.y)
+        
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
