@@ -7,9 +7,6 @@ def get_derivatives(network):
     for layer in network:
         derivatives.append([lambda y, X_tilde: 0]*len(layer))
 
-    # def stem(y, X):
-    #     return y - network[0][0].output()
-
     # stem is a function of y
     # derivatives are functions of y and X_tilde
     # y is relervant from the first stem. X_tilde only becomes relervant at the end
@@ -19,11 +16,22 @@ def get_derivatives(network):
         derivatives[i][j] = lambda y, X_tilde: derivatives[i][j](
             y, X_tilde) + np.matmul(X_tilde.T, stem(y))
 
-        for input_ in neuron.inputs:
-            if type(input_) == tuple:
+        for input_location in neuron.input_locations:
+            if type(input_location) == tuple:
                 def new_stem(y):
-                    output = network[input_[0]][input_[1]].input_neuron.output()
-                    return stem(y)*neuron.w[input_[1] + 1]*output*(np.ones(y.shape) - output)
-                differentiate(network, new_stem, input_[0], input_[1])
+                    output = network[input_location[0]
+                                     ][input_location[1]].output
+                    return stem(y)*neuron.w[input_location[1] + 1]*output*(np.ones(y.shape) - output)
+
+                differentiate(network, new_stem,
+                              input_location[0], input_location[1])
     differentiate(network)
     return derivatives
+
+
+def update_network(network):
+    for layer in network[::-1]:
+        # Iterates layers in reverse order
+        for neuron in layer:
+            neuron.update_X_tilde(network)
+            neuron.update_output()
