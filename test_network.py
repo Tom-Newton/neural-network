@@ -24,8 +24,7 @@ class Tests(unittest.TestCase):
         self.assertTrue((inputs[1] == np.array([[3],
                                                 [4]])).all())
         for index, neuron in enumerate(self.network[2]):
-            neuron.output = index * np.array([[1],
-                                              [3]])
+            neuron.output = index * np.array([1, 3])
         inputs = self.network[1][0].get_inputs(self.network, self.X)
         self.assertTrue((inputs[0] == np.array([[0],
                                                 [0]])).all())
@@ -43,6 +42,11 @@ class Tests(unittest.TestCase):
         neuron.update_X_tilde(self.network, self.X)
         neuron.update_output()
         self.assertTrue((neuron.output == predict(neuron.X_tilde, neuron.w)).all())
+        self.assertEqual(neuron.output.shape, (2, ))
+
+    def test_output(self):
+        network.update_network(self.network, self.X)
+        self.assertEqual(type(network.output(self.network)), np.ndarray)
 
 
 if __name__ == '__main__':

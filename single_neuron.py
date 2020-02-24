@@ -17,7 +17,7 @@ class SingleNeuron:
         for input_location in self.input_locations:
             if type(input_location) == tuple:
                 inputs.append(network[input_location[0]]
-                              [input_location[1]].output)
+                              [input_location[1]].output[:, np.newaxis])
             else:
                 # Converts 1D array to column vector then appends it
                 inputs.append(X[:, input_location][:, np.newaxis])
