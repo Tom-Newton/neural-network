@@ -29,9 +29,14 @@ def get_derivatives(network):
     return derivatives
 
 
-def update_network(network):
+def update_network(network, X):
     for layer in network[::-1]:
         # Iterates layers in reverse order
         for neuron in layer:
-            neuron.update_X_tilde(network)
+            neuron.update_X_tilde(network, X)
             neuron.update_output()
+    return network[0][0].output
+
+def output(network):
+    # Assumes the network has been updated
+    return network[0][0].output

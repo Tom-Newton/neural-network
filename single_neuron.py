@@ -12,11 +12,19 @@ class SingleNeuron:
         self.X_tilde = None
         self.output = None
 
-    def get_inputs(self, network):
-        return [network[input_location[0]][input_location[1]].output for input_location in self.input_locations]
+    def get_inputs(self, network, X):
+        inputs = []
+        for input_location in self.input_locations:
+            if type(input_location) == tuple:
+                inputs.append(network[input_location[0]]
+                              [input_location[1]].output)
+            else:
+                # Converts 1D array to column vector then appends it
+                inputs.append(X[:, input_location][:, np.newaxis])
+        return inputs
 
-    def update_X_tilde(self, network):
-        inputs = self.get_inputs(network)
+    def update_X_tilde(self, network, X):
+        inputs = self.get_inputs(network, X)
         inputs.insert(0, np.ones(inputs[0].shape))
         self.X_tilde = np.concatenate(inputs, 1)
 
