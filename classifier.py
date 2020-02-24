@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sys import stdout
 
 from network import Network
 from single_neuron import SingleNeuron
@@ -19,10 +20,27 @@ X_test = X[n_train:, :]
 y_train = y[0: n_train]
 y_test = y[n_train:]
 
-network = Network([[SingleNeuron([(1, 0), (1, 1)])],
-                   [SingleNeuron([(2, 0), (2, 1)]),
-                    SingleNeuron([(2, 0), (2, 1)])],
-                   [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
+network = Network([[SingleNeuron([(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)])],
+                   [SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
+                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)])],
+                   [SingleNeuron([0, 1]),
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]), 
+                    SingleNeuron([0, 1]),
+                    SingleNeuron([0, 1])]])
 
 
 def compute_average_ll(X, y):
@@ -40,11 +58,11 @@ def plot_data_internal(X, y):
     plt.xlim(xx.min(None), xx.max(None))
     plt.ylim(yy.min(None), yy.max(None))
     ax = plt.gca()
-    ax.plot(X[y == 0, 0], X[y == 0, 1], 'ro', label='Class 1')
-    ax.plot(X[y == 1, 0], X[y == 1, 1], 'bo', label='Class 2')
+    ax.plot(X[y == 0, 0], X[y == 0, 1], 'ro', label='0')
+    ax.plot(X[y == 1, 0], X[y == 1, 1], 'bo', label='1')
     plt.xlabel('X1')
     plt.ylabel('X2')
-    plt.title('Plot data')
+    plt.title('Estimated P(yn = 1 | x)')
     plt.legend(loc='upper left', scatterpoints=1, numpoints=1)
     return xx, yy
 
@@ -61,6 +79,7 @@ def plot_predictive_distribution(X, y):
     cs2 = ax.contour(xx, yy, Z, cmap='RdBu', linewidths=2)
     plt.clabel(cs2, fmt='%2.1f', colors='k', fontsize=14)
     plt.show()
+
 
 def plot_ll(ll):
     plt.figure()
@@ -88,17 +107,27 @@ def gradient_descent(X_train, y_train, X_test, y_test, number_steps, learning_ra
 
         ll_train[n] = compute_average_ll(X_train, y_train)
         ll_test[n] = compute_average_ll(X_test, y_test)
-        print(ll_train[n], ll_test[n])
+
+        if n % 100 == 0:
+            stdout.write(f'\t{int(100 * n/number_steps)}%\tll_train = {ll_train[n]}\t\tll_test = {ll_test[n]}\r')
+            stdout.flush()
 
     return ll_train, ll_test
 
 
-learning_rate = 0.0001
-number_steps = 100000
+learning_rate = 0.0004
+number_steps = 25000
 
 ll_train, ll_test = gradient_descent(X_train, y_train, X_test,
                                      y_test, number_steps, learning_rate)
 
+print(f'Initial ll_train = {ll_train[0]}, ll_test = {ll_test[0]}')
+print(f'Final ll_train = {ll_train[-1]}, ll_test = {ll_test[-1]}')
+
+for i, layer in enumerate(network.data):
+    print(f'layer {i}')
+    for neuron in layer:
+        print(neuron.w)
 
 plot_ll(ll_train)
 plot_ll(ll_test)
