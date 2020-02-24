@@ -7,10 +7,10 @@ class SingleNeuron:
     def __init__(self, inputs):
         self.inputs = inputs
         self.w = np.random.randn(len(inputs) + 1)
+        self.X_tilde = None
 
-    def output(self, X):
-        X_tilde = np.concatenate((np.ones((X.shape[0], 1)), X), 1)
-        return predict(X_tilde, self.w)
+    def output(self):
+        return predict(self.X_tilde, self.w)
 
     
 def logistic(x): return 1.0 / (1.0 + np.exp(-x))
