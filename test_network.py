@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from network import Network
-from single_neuron import SingleNeuron, predict
+from single_neuron import SingleNeuron, predict, logistic
 
 
 class Tests(unittest.TestCase):
@@ -20,7 +20,10 @@ class Tests(unittest.TestCase):
         derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
         derivatives[2][0](self.y)
-        
+
+        # expected_derivative = 0
+        # for n in range(2):
+        #     expected_derivative += self.y[n] - logistic(self.network.data[0][0])
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
