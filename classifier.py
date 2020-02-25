@@ -124,11 +124,6 @@ ll_train, ll_test = gradient_descent(X_train, y_train, X_test,
 print(f'Initial ll_train = {ll_train[0]}, ll_test = {ll_test[0]}')
 print(f'Final ll_train = {ll_train[-1]}, ll_test = {ll_test[-1]}')
 
-for i, layer in enumerate(network.data):
-    print(f'layer {i}')
-    for neuron in layer:
-        print(neuron.w)
-
 plot_ll(ll_train)
 plot_ll(ll_test)
 plot_predictive_distribution(X, y)
