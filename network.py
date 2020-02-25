@@ -16,22 +16,21 @@ class Network:
         # and w s are stored in the neuron objects. This makes the derivatives
         # functions of only y.
 
-        def differentiate(network_data, stem=lambda y: (y - self.data[0][0].output), i=0, j=0):
-            neuron = network_data[i][j]
-            old_derivative = derivatives[i][j]
+        def differentiate(stem=lambda y: (y - self.data[0][0].output), i=0, j=0):
+            def new_derivative(y, derivative=derivatives[i][j], stem=stem):
+                return derivative(y) + np.dot(self.data[i][j].X_tilde.T, stem(y))
+            derivatives[i][j] = new_derivative
 
-            derivatives[i][j] = lambda y: old_derivative(y) + np.dot(self.data[i][j].X_tilde.T, stem(y))
-
-            for input_location in neuron.input_locations:
+            for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    def new_stem(y):
+                    def new_stem(y, input_location=input_location):
                         output = self.data[input_location[0]
                                            ][input_location[1]].output
                         return stem(y)*self.data[i][j].w[input_location[1] + 1]*output*(np.ones(y.shape) - output)
 
-                    differentiate(network_data, new_stem,
-                                  input_location[0], input_location[1])
-        differentiate(self.data)
+                    differentiate(
+                        new_stem, input_location[0], input_location[1])
+        differentiate()
         return derivatives
 
     def update_network(self, X):

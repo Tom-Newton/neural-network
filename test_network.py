@@ -19,11 +19,19 @@ class Tests(unittest.TestCase):
     def test_get_differentials(self):
         derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
-        derivatives[2][0](self.y)
 
-        # expected_derivative = 0
-        # for n in range(2):
-        #     expected_derivative += self.y[n] - logistic(self.network.data[0][0])
+        # Calculate derivative numerically using taylor series
+        dw = 1E-8
+        for test_i, layer in enumerate(self.network.data):
+            for test_j in range(len(layer)):
+                analytical = derivatives[test_i][test_j](self.y)
+                for k in range(self.network.data[test_i][test_j].w.shape[0]):
+                    self.network.data[test_i][test_j].w[k] -= dw
+                    output1 = self.network.update_network(self.X)
+                    self.network.data[test_i][test_j].w[k] += 2*dw
+                    output2 = self.network.update_network(self.X)
+                    numerical = (calculate_log_likelihood(self.y, output2) - calculate_log_likelihood(self.y, output1))/(2*dw)
+                    self.assertAlmostEqual(numerical, analytical[k], 5)
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
@@ -56,6 +64,13 @@ class Tests(unittest.TestCase):
     def test_output(self):
         self.network.update_network(self.X)
         self.assertEqual(type(self.network.output()), np.ndarray)
+
+
+def calculate_log_likelihood(y, output):
+    L = 0
+    for y, probability in zip(y, output):
+        L += y * np.log(probability) + (1 - y) * np.log(1.0 - probability)
+    return L
 
 
 if __name__ == '__main__':
