@@ -115,7 +115,7 @@ def gradient_descent(X_train, y_train, X_test, y_test, number_steps, learning_ra
     return ll_train, ll_test
 
 
-learning_rate = 0.0004
+learning_rate = 0.002
 number_steps = 25000
 
 ll_train, ll_test = gradient_descent(X_train, y_train, X_test,
