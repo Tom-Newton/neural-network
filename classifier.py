@@ -78,7 +78,6 @@ def plot_predictive_distribution(X, y):
     Z = Z.reshape(xx.shape)
     cs2 = ax.contour(xx, yy, Z, cmap='RdBu', linewidths=2)
     plt.clabel(cs2, fmt='%2.1f', colors='k', fontsize=14)
-    plt.show()
 
 
 def plot_ll(ll):
@@ -90,7 +89,6 @@ def plot_ll(ll):
     plt.xlabel('Steps')
     plt.ylabel('Average log-likelihood')
     plt.title('Plot Average Log-likelihood Curve')
-    plt.show()
 
 
 def gradient_descent(X_train, y_train, X_test, y_test, number_steps, learning_rate):
@@ -127,3 +125,4 @@ print(f'Final ll_train = {ll_train[-1]}, ll_test = {ll_test[-1]}')
 plot_ll(ll_train)
 plot_ll(ll_test)
 plot_predictive_distribution(X, y)
+plt.show()
