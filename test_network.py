@@ -16,6 +16,8 @@ class Tests(unittest.TestCase):
 
         self.y = np.array([3, 2])
 
+        self.beta = np.array([2, 5, 8, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+
     def test_get_differentials(self):
         derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
@@ -27,9 +29,9 @@ class Tests(unittest.TestCase):
                 analytical = derivatives[test_i][test_j](self.y)
                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
                     self.network.data[test_i][test_j].w[k] -= dw
-                    output1 = self.network.update_network(self.X)
+                    output1 = self.network.update_network(self.X)[0]
                     self.network.data[test_i][test_j].w[k] += 2*dw
-                    output2 = self.network.update_network(self.X)
+                    output2 = self.network.update_network(self.X)[0]
                     numerical = (calculate_log_likelihood(self.y, output2) - calculate_log_likelihood(self.y, output1))/(2*dw)
                     self.assertAlmostEqual(numerical, analytical[k], 5)
 
@@ -58,12 +60,26 @@ class Tests(unittest.TestCase):
         neuron.update_X_tilde(self.network, self.X)
         neuron.update_output()
         self.assertTrue((neuron.output == predict(
-            neuron.X_tilde, neuron.w)).all())
+            neuron.X_tilde, neuron.w)[0]).all())
         self.assertEqual(neuron.output.shape, (2, ))
 
     def test_output(self):
         self.network.update_network(self.X)
-        self.assertEqual(type(self.network.output()), np.ndarray)
+        self.assertEqual(type(self.network.output()[0]), np.ndarray)
+
+    def test_unpack_beta(self):
+        self.network.unpack_beta(self.beta)
+        self.assertListEqual(list(self.network.data[0][0].w), [2, 5, 8])
+        self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
+        self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
+        self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
+        self.assertListEqual(list(self.network.data[2][1].w), [11, 24, 6])
+
+    def test_pack_beta(self):
+        self.assertEqual(self.network.pack_beta().shape, (15,))
+
+    def test_train(self):
+        self.network.train(self.X, self.y)
 
 
 def calculate_log_likelihood(y, output):

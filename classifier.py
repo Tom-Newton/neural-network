@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sys import stdout
 
-from network import Network
+from network import Network, log_likelihood
 from single_neuron import SingleNeuron
 
 X = np.loadtxt('X.txt')
@@ -43,12 +43,6 @@ network = Network([[SingleNeuron([(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5)
                     SingleNeuron([0, 1])]])
 
 
-def compute_average_ll(X, y):
-    # Vector of P(yn = 1) for each datapoint
-    output_prob = network.update_network(X)
-    return np.mean(y * np.log(output_prob) + (1 - y) * np.log(1.0 - output_prob))
-
-
 def plot_data_internal(X, y):
     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
@@ -74,55 +68,24 @@ def plot_predictive_distribution(X, y):
     X = np.concatenate((xx.ravel().reshape((-1, 1)),
                         yy.ravel().reshape((-1, 1))), 1)
     # Create X from the grid of points formed by concatenating xx and yy to form a list of 10000 [xx[n][m], yy[n][m]]
-    Z = network.update_network(X)
+    Z = network.update_network(X)[0]
     Z = Z.reshape(xx.shape)
     cs2 = ax.contour(xx, yy, Z, cmap='RdBu', linewidths=2)
     plt.clabel(cs2, fmt='%2.1f', colors='k', fontsize=14)
 
+predictions, x = network.update_network(X_train)
+ll_train = log_likelihood(predictions, x, y_train)
+predictions, x = network.update_network(X_test)
+ll_test = log_likelihood(predictions, x, y_test)
+print(f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(1000 - n_train)}')
 
-def plot_ll(ll):
-    plt.figure()
-    ax = plt.gca()
-    plt.xlim(0, len(ll) + 2)
-    plt.ylim(min(ll) - 0.1, max(ll) + 0.1)
-    ax.plot(np.arange(1, len(ll) + 1), ll, 'r-')
-    plt.xlabel('Steps')
-    plt.ylabel('Average log-likelihood')
-    plt.title('Plot Average Log-likelihood Curve')
+network.train(X_train, y_train, 50)
 
+predictions, x = network.update_network(X_train)
+ll_train = log_likelihood(predictions, x, y_train)
+predictions, x = network.update_network(X_test)
+ll_test = log_likelihood(predictions, x, y_test)
+print(f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(1000 - n_train)}')
 
-def gradient_descent(X_train, y_train, X_test, y_test, number_steps, learning_rate):
-    ll_train = np.zeros(number_steps)
-    ll_test = np.zeros(number_steps)
-    for n in range(number_steps):
-        network.update_network(X_train)
-        derivatives = network.get_derivatives()
-
-        for i, layer in enumerate(network.data):
-            for j, neuron in enumerate(layer):
-                gradient = derivatives[i][j](y_train)
-                neuron.w += learning_rate*gradient
-
-        ll_train[n] = compute_average_ll(X_train, y_train)
-        ll_test[n] = compute_average_ll(X_test, y_test)
-
-        if n % 100 == 0:
-            stdout.write(f'\t{int(100 * n/number_steps)}%\tll_train = {ll_train[n]}\t\tll_test = {ll_test[n]}\r')
-            stdout.flush()
-
-    return ll_train, ll_test
-
-
-learning_rate = 0.002
-number_steps = 25000
-
-ll_train, ll_test = gradient_descent(X_train, y_train, X_test,
-                                     y_test, number_steps, learning_rate)
-
-print(f'Initial ll_train = {ll_train[0]}, ll_test = {ll_test[0]}')
-print(f'Final ll_train = {ll_train[-1]}, ll_test = {ll_test[-1]}')
-
-plot_ll(ll_train)
-plot_ll(ll_test)
 plot_predictive_distribution(X, y)
 plt.show()

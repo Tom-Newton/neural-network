@@ -11,11 +11,12 @@ class SingleNeuron:
         self.w = np.random.randn(len(input_locations) + 1)
         self.X_tilde = None
         self.output = None
+        self.x = None
 
     def get_inputs(self, network, X):
         inputs = []
         for input_location in self.input_locations:
-            # 1D arrays need to be converted to column vectors so they can be concatenated 
+            # 1D arrays need to be converted to column vectors so they can be concatenated
             if type(input_location) == tuple:
                 inputs.append(network[input_location[0]]
                               [input_location[1]].output[:, np.newaxis])
@@ -29,10 +30,14 @@ class SingleNeuron:
         self.X_tilde = np.concatenate(inputs, 1)
 
     def update_output(self):
-        self.output = predict(self.X_tilde, self.w)
+        prediction = predict(self.X_tilde, self.w)
+        self.output = prediction[0]
+        self.x = prediction[1]
 
 
 def logistic(x): return 1.0 / (1.0 + np.exp(-x))
 
 
-def predict(X_tilde, w): return logistic(np.dot(X_tilde, w))
+def predict(X_tilde, w):
+    x = np.dot(X_tilde, w)
+    return logistic(x), x
