@@ -79,7 +79,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.network.pack_beta().shape, (15,))
 
     def test_train(self):
-        self.network.train(self.X, self.y)
+        self.network.train(self.X, self.y, 1)
 
 
 def calculate_log_likelihood(y, output):
