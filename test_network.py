@@ -11,8 +11,8 @@ class Tests(unittest.TestCase):
                                  SingleNeuron([(2, 0), (2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
 
-        self.X = np.array([[1, 3],
-                           [2, 4]])
+        self.X = np.array([[1, 3, 2],
+                           [2, 4, 6]])
 
         self.y = np.array([3, 2])
 
