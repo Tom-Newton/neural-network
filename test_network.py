@@ -93,7 +93,9 @@ class SoftmaxTests(unittest.TestCase):
                            [2.1, 1.9],
                            [1, 1.2]])
 
-        self.softmax = Softmax([])
+        self.number_classes = 2
+
+        self.softmax = Softmax(self.number_classes, [])
         self.softmax.X_tilde = self.X_tilde
         self.softmax.W = self.W
 

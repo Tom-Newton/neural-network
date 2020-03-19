@@ -36,9 +36,9 @@ class SingleNeuron:
 
 
 class Softmax(SingleNeuron):
-    def __init__(self, input_locations):
-        # Matrix with columns being w vectors
-        self.W = None
+    def __init__(self, number_classes, input_locations):
+        # Matrix with columns being w vectors for each class
+        self.W = np.random.randn(len(input_locations) + 1, number_classes)
         super().__init__(input_locations)
 
     def update_output(self):
@@ -56,6 +56,6 @@ def predict(X_tilde, w):
 
 
 def softmax_predict(X_tilde, W):
-    # Returns a matrix: row for each x_tilde and column for each w
+    # Returns a matrix: row with x_tilde for each n and column with w for each class
     a = np.exp(np.dot(X_tilde, (W - np.amax(W))))
     return a/(np.sum(a, axis=1)[:, np.newaxis])
