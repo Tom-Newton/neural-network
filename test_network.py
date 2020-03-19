@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 from network import Network
-from single_neuron import SingleNeuron, predict, logistic
+from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
 
 
-class Tests(unittest.TestCase):
+class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = Network([[SingleNeuron([(1, 0), (1, 1)])],
                                 [SingleNeuron([(2, 0), (2, 1)]),
@@ -32,7 +32,8 @@ class Tests(unittest.TestCase):
                     output1 = self.network.update_network(self.X)[0]
                     self.network.data[test_i][test_j].w[k] += 2*dw
                     output2 = self.network.update_network(self.X)[0]
-                    numerical = (calculate_log_likelihood(self.y, output2) - calculate_log_likelihood(self.y, output1))/(2*dw)
+                    numerical = (calculate_log_likelihood(
+                        self.y, output2) - calculate_log_likelihood(self.y, output1))/(2*dw)
                     self.assertAlmostEqual(numerical, analytical[k], 5)
 
     def test_get_inputs(self):
@@ -80,6 +81,25 @@ class Tests(unittest.TestCase):
 
     def test_train(self):
         self.network.train(self.X, self.y, 1)
+
+
+class SoftmaxTests(unittest.TestCase):
+    def setUp(self):
+        self.X_tilde = np.array([[1, 3, 2],
+                                 [1, 4, 6],
+                                 [1, 2, 3]])
+
+        self.W = np.array([[2, 0.6],
+                           [2.1, 1.9],
+                           [1, 1.2]])
+
+        self.softmax = Softmax([])
+        self.softmax.X_tilde = self.X_tilde
+        self.softmax.W = self.W
+
+    def test_softmax_predict(self):
+        self.softmax.update_output()
+        self.assertEqual(self.softmax.output.shape, (3, 2))
 
 
 def calculate_log_likelihood(y, output):
