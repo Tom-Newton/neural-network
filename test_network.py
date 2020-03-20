@@ -6,7 +6,7 @@ from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_pred
 
 class NetworkTests(unittest.TestCase):
     def setUp(self):
-        self.network = Network([[Softmax(2, [(1, 0), (1, 1)])],
+        self.network = Network([[Softmax(2, [(1, 0), (1, 1), 0])],
                                 [SingleNeuron([(2, 0), (2, 1)]),
                                  SingleNeuron([(2, 0), (2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
@@ -17,7 +17,7 @@ class NetworkTests(unittest.TestCase):
         self.Y = np.array([[0, 1],
                            [1, 0]])
 
-        self.beta = np.array([2, 5, 8, 2, 5, 7, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+        self.beta = np.array([2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
 
     def test_log_likelihood(self):
         output = self.network.update_network(self.X)[0]
@@ -28,7 +28,7 @@ class NetworkTests(unittest.TestCase):
         self.network.update_network(self.X)
 
         # Calculate derivative numerically using taylor series
-        dw = 1E-5
+        dw = 1E-6
         for test_i, layer in enumerate(self.network.data):
             for test_j in range(len(layer)):
                 analytical = derivatives[test_i][test_j](self.Y)
@@ -85,8 +85,8 @@ class NetworkTests(unittest.TestCase):
 
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)
-        self.assertListEqual(list(self.network.data[0][0].W[:, 0]), [2, 5, 8])
-        self.assertListEqual(list(self.network.data[0][0].W[:, 1]), [2, 5, 7])
+        self.assertListEqual(list(self.network.data[0][0].W[:, 0]), [2, 5, 8, 1])
+        self.assertListEqual(list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
         self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
         self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
         self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
@@ -98,6 +98,7 @@ class NetworkTests(unittest.TestCase):
         self.assertListEqual(list(beta), list(self.beta))
 
     def test_train(self):
+        # TODO: Try to make this converge
         self.network.train(self.X, self.Y, 1, 20)
 
 
