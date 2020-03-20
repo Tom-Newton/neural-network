@@ -38,6 +38,7 @@ class SingleNeuron:
 class Softmax(SingleNeuron):
     def __init__(self, number_classes, input_locations):
         # Matrix with columns being w vectors for each class
+        self.number_classes = number_classes
         self.W = np.random.randn(len(input_locations) + 1, number_classes)
         super().__init__(input_locations)
 
@@ -52,6 +53,7 @@ def logistic(x): return 1.0 / (1.0 + np.exp(-x))
 
 def predict(X_tilde, w):
     x = np.dot(X_tilde, w)
+    # TODO: Get rid of extra x variable. It's no longer needed for computing log likelihood
     return logistic(x), x
 
 

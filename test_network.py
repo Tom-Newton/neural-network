@@ -1,12 +1,12 @@
 import unittest
 import numpy as np
-from network import Network
+from network import Network, log_likelihood
 from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
 
 
 class NetworkTests(unittest.TestCase):
     def setUp(self):
-        self.network = Network([[SingleNeuron([(1, 0), (1, 1)])],
+        self.network = Network([[Softmax(2, [(1, 0), (1, 1)])],
                                 [SingleNeuron([(2, 0), (2, 1)]),
                                  SingleNeuron([(2, 0), (2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
@@ -14,27 +14,42 @@ class NetworkTests(unittest.TestCase):
         self.X = np.array([[1, 3, 2],
                            [2, 4, 6]])
 
-        self.y = np.array([3, 2])
+        self.Y = np.array([[0, 1],
+                           [1, 0]])
 
-        self.beta = np.array([2, 5, 8, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+        self.beta = np.array([2, 5, 8, 2, 5, 7, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+
+    def test_log_likelihood(self):
+        output = self.network.update_network(self.X)[0]
+        self.assertEqual(log_likelihood(self.Y, output).shape, ())
 
     def test_get_differentials(self):
         derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
 
         # Calculate derivative numerically using taylor series
-        dw = 1E-8
+        dw = 1E-5
         for test_i, layer in enumerate(self.network.data):
             for test_j in range(len(layer)):
-                analytical = derivatives[test_i][test_j](self.y)
+                analytical = derivatives[test_i][test_j](self.Y)
                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
-                    self.network.data[test_i][test_j].w[k] -= dw
-                    output1 = self.network.update_network(self.X)[0]
-                    self.network.data[test_i][test_j].w[k] += 2*dw
-                    output2 = self.network.update_network(self.X)[0]
-                    numerical = (calculate_log_likelihood(
-                        self.y, output2) - calculate_log_likelihood(self.y, output1))/(2*dw)
-                    self.assertAlmostEqual(numerical, analytical[k], 5)
+                    if test_i == 0:
+                        for l in range(self.network.data[0][0].number_classes):
+                            self.network.data[0][0].W[k][l] -= dw
+                            output1 = self.network.update_network(self.X)[0]
+                            self.network.data[0][0].W[k][l] += 2*dw
+                            output2 = self.network.update_network(self.X)[0]
+                            numerical = (log_likelihood(
+                                self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+                            self.assertAlmostEqual(numerical, analytical[k][l], 5)
+                    else:
+                        self.network.data[test_i][test_j].w[k] -= dw
+                        output1 = self.network.update_network(self.X)[0]
+                        self.network.data[test_i][test_j].w[k] += 2*dw
+                        output2 = self.network.update_network(self.X)[0]
+                        numerical = (log_likelihood(
+                            self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+                        self.assertAlmostEqual(numerical, analytical[k], 5)
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
@@ -70,17 +85,20 @@ class NetworkTests(unittest.TestCase):
 
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)
-        self.assertListEqual(list(self.network.data[0][0].w), [2, 5, 8])
+        self.assertListEqual(list(self.network.data[0][0].W[:, 0]), [2, 5, 8])
+        self.assertListEqual(list(self.network.data[0][0].W[:, 1]), [2, 5, 7])
         self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
         self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
         self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
         self.assertListEqual(list(self.network.data[2][1].w), [11, 24, 6])
 
     def test_pack_beta(self):
-        self.assertEqual(self.network.pack_beta().shape, (15,))
+        self.network.unpack_beta(self.beta)
+        beta = self.network.pack_beta()
+        self.assertListEqual(list(beta), list(self.beta))
 
     def test_train(self):
-        self.network.train(self.X, self.y, 1)
+        self.network.train(self.X, self.Y, 1, 20)
 
 
 class SoftmaxTests(unittest.TestCase):
@@ -102,13 +120,6 @@ class SoftmaxTests(unittest.TestCase):
     def test_softmax_predict(self):
         self.softmax.update_output()
         self.assertEqual(self.softmax.output.shape, (3, 2))
-
-
-def calculate_log_likelihood(y, output):
-    L = 0
-    for y, probability in zip(y, output):
-        L += y * np.log(probability) + (1 - y) * np.log(1.0 - probability)
-    return L
 
 
 if __name__ == '__main__':
