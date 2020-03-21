@@ -86,7 +86,6 @@ class Network:
 
     def unpack_beta(self, beta):
         index = 0
-        # TODO: Update this to work with W matrix on the top node
         for i, layer in enumerate(self.data):
             for neuron in layer:
                 if i == 0:
