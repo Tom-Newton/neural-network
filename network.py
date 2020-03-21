@@ -107,6 +107,12 @@ class Network:
                     beta = np.concatenate((beta, neuron.w), axis=0)
         return beta
 
+class Convolutional(Network):
+    def __init__(self, network_data, input_shape, network_input_shape):
+        self.input_shape = input_shape
+        self.network_input_shape = network_input_shape
+        super().__init__(network_data)
+
 
 def log_likelihood(Y, predictions):
     return np.sum(np.log(predictions)[Y == 1])
