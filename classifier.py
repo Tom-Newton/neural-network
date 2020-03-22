@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sys import stdout
 
 from network import Network, log_likelihood
 from single_neuron import SingleNeuron, Softmax

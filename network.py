@@ -68,7 +68,8 @@ class Network:
                 for neuron_derivative in layer_derivatives:
                     if i == 0:
                         for derivative in neuron_derivative(Y_train).T:
-                            packed_derivatives = np.concatenate((packed_derivatives, derivative), axis=0)
+                            packed_derivatives = np.concatenate(
+                                (packed_derivatives, derivative), axis=0)
                     else:
                         packed_derivatives = np.concatenate(
                             (packed_derivatives, neuron_derivative(Y_train)), axis=0)
@@ -106,6 +107,17 @@ class Network:
                 else:
                     beta = np.concatenate((beta, neuron.w), axis=0)
         return beta
+
+
+def transform_image(image):
+    x = np.array([])
+    for row in image:
+        x = np.concatenate((x, row), axis=0)
+    return x
+
+
+def log_prior_beta(beta, sigma0_squared):
+    return -beta.shape[0]/2 * np.log(2*np.pi*sigma0_squared) - 0.5*np.dot(beta.T, beta)/sigma0_squared
 
 
 def log_likelihood(Y, predictions):

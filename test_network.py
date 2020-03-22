@@ -17,7 +17,8 @@ class NetworkTests(unittest.TestCase):
         self.Y = np.array([[0, 1],
                            [1, 0]])
 
-        self.beta = np.array([2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+        self.beta = np.array(
+            [2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
 
     def test_log_likelihood(self):
         output = self.network.update_network(self.X)[0]
@@ -41,7 +42,8 @@ class NetworkTests(unittest.TestCase):
                             output2 = self.network.update_network(self.X)[0]
                             numerical = (log_likelihood(
                                 self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-                            self.assertAlmostEqual(numerical, analytical[k][l], 5)
+                            self.assertAlmostEqual(
+                                numerical, analytical[k][l], 5)
                     else:
                         self.network.data[test_i][test_j].w[k] -= dw
                         output1 = self.network.update_network(self.X)[0]
@@ -85,8 +87,10 @@ class NetworkTests(unittest.TestCase):
 
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)
-        self.assertListEqual(list(self.network.data[0][0].W[:, 0]), [2, 5, 8, 1])
-        self.assertListEqual(list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
+        self.assertListEqual(
+            list(self.network.data[0][0].W[:, 0]), [2, 5, 8, 1])
+        self.assertListEqual(
+            list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
         self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
         self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
         self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
