@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from network import Network, log_likelihood
+from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
 
 
@@ -104,6 +104,10 @@ class NetworkTests(unittest.TestCase):
     def test_train(self):
         # TODO: Try to make this converge
         self.network.train(self.X, self.Y, 1, 20)
+
+    def test_calculate_confusion_matrix(self):
+        calculate_confusion_matrix(self.Y, np.array([[0.4, 0.6],
+                                                     [0.4, 0.6]]))
 
 
 class SoftmaxTests(unittest.TestCase):
