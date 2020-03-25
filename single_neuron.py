@@ -48,6 +48,7 @@ class Softmax(SingleNeuron):
         self.output = prediction
 
 
+# TODO: Fix the occasional numerical error
 def logistic(x): return 1.0 / (1.0 + np.exp(-x))
 
 

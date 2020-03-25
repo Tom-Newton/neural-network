@@ -1,13 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import datasets
-from network import Network, log_likelihood, transform_image, calculate_confusion_matrix
+from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax
 
 digits = datasets.load_digits()
 images = digits.images
 labels = digits.target
 number_classes = 10
+
+
+def transform_image(image):
+    x = np.array([])
+    for row in image:
+        x = np.concatenate((x, row), axis=0)
+    return x
+
+
+def un_transform_image(x, shape):
+    image = np.zeros(shape)
+    index = 0
+    for i in range(shape[0]):
+        image[i, :] = x[index: index + shape[1]]
+        index += shape[1]
+    return image
+
 
 X = np.zeros((images.shape[0], images.shape[1]*images.shape[2]))
 for n, image in enumerate(images):
@@ -25,9 +42,6 @@ X_train = X[0: n_train, :]
 X_test = X[n_train:, :]
 Y_train = Y[0: n_train, :]
 Y_test = Y[n_train:, :]
-
-
-
 
 network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)])],
 
@@ -94,7 +108,7 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}')
 
-network.train(X_train, Y_train, 1)
+network.train(X_train, Y_train, 0.8)
 
 predictions, x = network.update_network(X_train)
 ll_train = log_likelihood(Y_train, predictions)
@@ -104,9 +118,6 @@ print(
     f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}')
 
 confusion_matrix = np.round(calculate_confusion_matrix(Y_test, predictions), 2)
-
-for row in confusion_matrix:
-    print(np.sum(row))
 
 _, ax = plt.subplots()
 ax.set_xticks(np.arange(number_classes))
@@ -121,4 +132,21 @@ for i in range(number_classes):
         ax.text(j, i, round(
             confusion_matrix[i, j], 3), ha='center', va='center', color='w')
 ax.imshow(confusion_matrix)
+
+hard_predictions = np.argmax(predictions, 1)
+true_classes = np.argmax(Y_test, 1)
+
+for n in range(number_classes):
+    fig = plt.figure()
+    fig.suptitle(f'Supposed to be {n}s but incorrectly categorised')
+    incorrect_predictions = np.logical_and(
+        true_classes == n, hard_predictions != n)
+    incorrect_class = hard_predictions[incorrect_predictions]
+    x = X_test[incorrect_predictions]
+    number_to_display = np.sum(incorrect_predictions)
+    for l in range(number_to_display):
+        plt.subplot(1, number_to_display, l+1)
+        plt.title(incorrect_class[l])
+        plt.imshow(un_transform_image(x[l], (8, 8)))
+
 plt.show()

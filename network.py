@@ -109,13 +109,6 @@ class Network:
         return beta
 
 
-def transform_image(image):
-    x = np.array([])
-    for row in image:
-        x = np.concatenate((x, row), axis=0)
-    return x
-
-
 def log_prior_beta(beta, sigma0_squared):
     return -beta.shape[0]/2 * np.log(2*np.pi*sigma0_squared) - 0.5*np.dot(beta.T, beta)/sigma0_squared
 
@@ -124,11 +117,12 @@ def log_likelihood(Y, predictions):
     return np.sum(np.log(predictions)[Y == 1])
 
 
-def calculate_confusion_matrix(Y, predictions, threshold=0.5):
-    hard_predictions = predictions >= 0.5
+def calculate_confusion_matrix(Y, predictions):
+    hard_predictions = np.argmax(predictions, 1)
+    true_classes = np.argmax(Y, 1)
     matrix = np.zeros((Y.shape[1], Y.shape[1]))
     for i in range(matrix.shape[0]):
         # i is true class j is predicted class
         for j in range(matrix.shape[1]):
-            matrix[i, j] = np.sum(np.logical_and(Y[:, i], hard_predictions[:, j]), axis=0)/np.sum(Y[:, i], axis=0)
+            matrix[i, j] = np.sum(np.logical_and(true_classes == i, hard_predictions == j), axis=0)/np.sum(true_classes == i, axis=0)
     return matrix
