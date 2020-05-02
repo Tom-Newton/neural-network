@@ -51,7 +51,7 @@ class Network:
         # Assumes the network has been updated
         return self.data[0][0].output, self.data[0][0].x
 
-    def train(self, X_train, Y_train, sigma0_squared, max_iterations=15000):
+    def train(self, X_train, Y_train, sigma0_squared, max_iterations=1000):
         derivatives = self.get_derivatives()
         # beta is all the w vectors stacked on top of each other
 
@@ -60,7 +60,7 @@ class Network:
             self.unpack_beta(beta)
 
             predictions, x = self.update_network(X_train)
-            f = -1*(log_likelihood(Y_train, predictions) -
+            f = -1*(log_likelihood(Y_train, predictions) +
                     log_prior_beta(beta, sigma0_squared))
 
             packed_derivatives = np.array([])
@@ -79,11 +79,12 @@ class Network:
 
         optimal = scipy.optimize.fmin_l_bfgs_b(
             f, self.pack_beta(), maxiter=max_iterations)
-        if optimal[2]['warnflag'] == 0:
-            return optimal[0]
-        else:
+
+        if optimal[2]['warnflag'] != 0:
+            print(f'Search didn\'t converge.') # {optimal}')
             # raise ValueError(f'Search didn\'t converge. {optimal}')
-            print(f'Search didn\'t converge. {optimal}')
+
+        return optimal[0]
 
     def unpack_beta(self, beta):
         index = 0

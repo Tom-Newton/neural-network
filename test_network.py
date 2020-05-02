@@ -102,7 +102,6 @@ class NetworkTests(unittest.TestCase):
         self.assertListEqual(list(beta), list(self.beta))
 
     def test_train(self):
-        # TODO: Try to make this converge
         self.network.train(self.X, self.Y, 1, 20)
 
     def test_calculate_confusion_matrix(self):
