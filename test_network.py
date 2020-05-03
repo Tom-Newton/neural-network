@@ -11,6 +11,13 @@ class NetworkTests(unittest.TestCase):
                                  SingleNeuron([(2, 0), (2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
 
+        self.w_data = np.array([
+            [[[1, 3, 0, 6],
+               [1, 2, -1, 3]]],
+            [[2, -1, 0], [-1, 2, 2]],
+            [[2, -1, 0], [-1, 2, 2]]
+        ])
+
         self.X = np.array([[1, 3, 2],
                            [2, 4, 6]])
 
@@ -87,6 +94,15 @@ class NetworkTests(unittest.TestCase):
 
     def test_reset_weights(self):
         self.network.reset_weights()
+
+    def test_set_weights(self):
+        self.network.set_weights(self.w_data)
+        for w_layer, layer in zip(self.w_data, self.network.data):
+            for w, neuron in zip(w_layer, layer):
+                if type(neuron) == Softmax:
+                    self.assertListEqual(list(w), list(neuron.W))
+                else:
+                    self.assertListEqual(list(w), list(neuron.w))
 
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)

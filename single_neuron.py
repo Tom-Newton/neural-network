@@ -37,18 +37,29 @@ class SingleNeuron:
     def reset_weights(self):
         self.w = np.random.randn(len(self.input_locations) + 1)
 
+    def set_weights(self, w):
+        self.w = w
+
 
 class Softmax(SingleNeuron):
     def __init__(self, number_classes, input_locations):
         # Matrix with columns being w vectors for each class
         self.number_classes = number_classes
-        self.W = np.random.randn(len(input_locations) + 1, number_classes)
         super().__init__(input_locations)
+        self.W = np.random.randn(
+            len(self.input_locations) + 1, self.number_classes)
 
     def update_output(self):
         # Will be a vector of probabilities of each class
         prediction = softmax_predict(self.X_tilde, self.W)
         self.output = prediction
+
+    def reset_weights(self):
+        self.W = np.random.randn(
+            len(self.input_locations) + 1, self.number_classes)
+
+    def set_weights(self, W):
+        self.W = W
 
 
 # TODO: Fix the occasional numerical error

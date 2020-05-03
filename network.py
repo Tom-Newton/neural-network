@@ -56,6 +56,11 @@ class Network:
             for neuron in layer:
                 neuron.reset_weights()
 
+    def set_weights(self, w_data):
+        for w_layer, layer in zip(w_data, self.data):
+            for w, neuron in zip(w_layer, layer):
+                neuron.set_weights(w)
+
     def train(self, X_train, Y_train, sigma0_squared, max_iterations=1000):
         derivatives = self.get_derivatives()
         # beta is all the w vectors stacked on top of each other
@@ -130,5 +135,6 @@ def calculate_confusion_matrix(Y, predictions):
     for i in range(matrix.shape[0]):
         # i is true class j is predicted class
         for j in range(matrix.shape[1]):
-            matrix[i, j] = np.sum(np.logical_and(true_classes == i, hard_predictions == j), axis=0)/np.sum(true_classes == i, axis=0)
+            matrix[i, j] = np.sum(np.logical_and(
+                true_classes == i, hard_predictions == j), axis=0)/np.sum(true_classes == i, axis=0)
     return matrix
