@@ -85,6 +85,9 @@ class NetworkTests(unittest.TestCase):
         self.network.update_network(self.X)
         self.assertEqual(type(self.network.output()[0]), np.ndarray)
 
+    def test_reset_weights(self):
+        self.network.reset_weights()
+
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)
         self.assertListEqual(

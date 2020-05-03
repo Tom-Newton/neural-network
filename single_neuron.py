@@ -8,7 +8,7 @@ import numpy as np
 class SingleNeuron:
     def __init__(self, input_locations):
         self.input_locations = input_locations
-        self.w = np.random.randn(len(input_locations) + 1)
+        self.w = np.random.randn(len(self.input_locations) + 1)
         self.X_tilde = None
         self.output = None
         self.x = None
@@ -33,6 +33,9 @@ class SingleNeuron:
         prediction = predict(self.X_tilde, self.w)
         self.output = prediction[0]
         self.x = prediction[1]
+
+    def reset_weights(self):
+        self.w = np.random.randn(len(self.input_locations) + 1)
 
 
 class Softmax(SingleNeuron):

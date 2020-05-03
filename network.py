@@ -51,6 +51,11 @@ class Network:
         # Assumes the network has been updated
         return self.data[0][0].output, self.data[0][0].x
 
+    def reset_weights(self):
+        for layer in self.data:
+            for neuron in layer:
+                neuron.reset_weights()
+
     def train(self, X_train, Y_train, sigma0_squared, max_iterations=1000):
         derivatives = self.get_derivatives()
         # beta is all the w vectors stacked on top of each other
