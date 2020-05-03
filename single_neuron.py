@@ -40,6 +40,9 @@ class SingleNeuron:
     def set_weights(self, w):
         self.w = w
 
+    def get_weights(self):
+        return self.w
+
 
 class Softmax(SingleNeuron):
     def __init__(self, number_classes, input_locations):
@@ -60,6 +63,9 @@ class Softmax(SingleNeuron):
 
     def set_weights(self, W):
         self.W = W
+
+    def get_weights(self):
+        return self.W
 
 
 # TODO: Fix the occasional numerical error

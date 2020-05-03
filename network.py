@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.optimize
-import single_neuron
+from single_neuron import Softmax
 
 
 class Network:
@@ -61,7 +61,20 @@ class Network:
             for w, neuron in zip(w_layer, layer):
                 neuron.set_weights(w)
 
-    def train(self, X_train, Y_train, sigma0_squared, max_iterations=1000):
+    def get_weights(self):
+        w_data = []
+        for layer in self.data:
+            w_layer = []
+            for neuron in layer:
+                if type(neuron) == Softmax:
+                    w_layer.append(neuron.W)
+                else:
+                    w_layer.append(neuron.w)
+            w_data.append(w_layer)
+        return w_data
+
+
+    def train(self, X_train, Y_train, sigma0_squared, max_iterations=100000):
         derivatives = self.get_derivatives()
         # beta is all the w vectors stacked on top of each other
 

@@ -108,14 +108,17 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}')
 
-network.train(X_train, Y_train, 0.8)
+# w_data = np.load('w_data.npy', allow_pickle=True)
+# network.set_weights(w_data)
+
+network.train(X_train, Y_train, 1)
 
 predictions, x = network.update_network(X_train)
 ll_train = log_likelihood(Y_train, predictions)
 predictions, x = network.update_network(X_test)
 ll_test = log_likelihood(Y_test, predictions)
 print(
-    f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}')
+    f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}\n')
 
 confusion_matrix = np.round(calculate_confusion_matrix(Y_test, predictions), 2)
 
@@ -148,5 +151,11 @@ for n in range(number_classes):
         plt.subplot(1, number_to_display, l+1)
         plt.title(incorrect_class[l])
         plt.imshow(un_transform_image(x[l], (8, 8)))
+
+old_ll_test = np.loadtxt('ll_test.txt')
+if old_ll_test <= ll_test:
+    print('Updating old weights')
+    np.save('w_data.npy', network.get_weights())
+    np.savetxt('ll_test.txt', str(ll_train))
 
 plt.show()
