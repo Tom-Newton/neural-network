@@ -73,7 +73,6 @@ class Network:
             w_data.append(w_layer)
         return w_data
 
-
     def train(self, X_train, Y_train, sigma0_squared, max_iterations=100000):
         derivatives = self.get_derivatives()
         # beta is all the w vectors stacked on top of each other
@@ -104,7 +103,7 @@ class Network:
             f, self.pack_beta(), maxiter=max_iterations)
 
         if optimal[2]['warnflag'] != 0:
-            print(f'Search didn\'t converge.') # {optimal}')
+            print(f'Search didn\'t converge.')  # {optimal}')
             # raise ValueError(f'Search didn\'t converge. {optimal}')
 
         return optimal[0]
