@@ -25,80 +25,52 @@ def un_transform_image(x, shape):
         index += shape[1]
     return image
 
+def normalise(x):
+    n_data = x.shape[0]
+    m = x.sum(axis=0)
+    x0 = x - m/n_data
+    s = np.sqrt((x0**2).sum(axis=0)/n_data)
+    ss = np.array([ tmp if tmp != 0 else 1 for tmp in s])
+    x00 = x0 / ss
+    return x00
 
 X = np.zeros((images.shape[0], images.shape[1]*images.shape[2]))
 for n, image in enumerate(images):
     X[n, :] = transform_image(images[n, :, :])
 
+n_total = X.shape[0]
+n_train = 1300
+
+X = normalise(X)
+U, s, V = np.linalg.svd(X)
+
+n_components = 50
+X2 = np.zeros((n_total, n_components))
+for i in range(n_components):
+    X2[:, i] = np.dot(X, V[i, :])
 
 # Create Y matrix using onehot encoding
 Y = np.zeros((labels.shape[0], number_classes))
 for k in range(number_classes):
     Y[labels == k, k] = 1
 
-n_total = X.shape[0]
-n_train = 1300
-X_train = X[0: n_train, :]
-X_test = X[n_train:, :]
+X_train = X2[0: n_train, :]
+X_test = X2[n_train:, :]
 Y_train = Y[0: n_train, :]
 Y_test = Y[n_train:, :]
 
 network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)])],
 
-                   [SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)]),
-                    SingleNeuron([(2, 0), (2, 1), (2, 2), (2, 3),
-                                  (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9)])],
-
-
-                   [SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)]),
-                    SingleNeuron([(3, 0), (3, 1), (3, 2), (3, 3),
-                                  (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9)])],
-
-
-                   [SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1]))),
-                    SingleNeuron(list(range(X.shape[1])))]])
+                   [SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components))),
+                    SingleNeuron(list(range(n_components)))]])
 
 
 predictions, x = network.update_network(X_train)
@@ -111,7 +83,7 @@ print(
 # w_data = np.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
-network.train(X_train, Y_train, 1)
+network.train(X_train, Y_train, 0.4)
 
 predictions, x = network.update_network(X_train)
 ll_train = log_likelihood(Y_train, predictions)
@@ -127,7 +99,7 @@ ax.set_xticks(np.arange(number_classes))
 ax.set_yticks(np.arange(number_classes))
 ax.set_xticklabels(list(range(number_classes)))
 ax.set_yticklabels(list(range(number_classes)))
-ax.set_title('Confusion matrix P(predicted class | true class')
+ax.set_title('Confusion matrix P(predicted class | true class)')
 plt.xlabel('Predicted class')
 plt.ylabel('True class')
 for i in range(number_classes):
@@ -145,12 +117,12 @@ for n in range(number_classes):
     incorrect_predictions = np.logical_and(
         true_classes == n, hard_predictions != n)
     incorrect_class = hard_predictions[incorrect_predictions]
-    x = X_test[incorrect_predictions]
+    x_indices = incorrect_predictions.nonzero()[0]
     number_to_display = np.sum(incorrect_predictions)
     for l in range(number_to_display):
         plt.subplot(1, number_to_display, l+1)
         plt.title(incorrect_class[l])
-        plt.imshow(un_transform_image(x[l], (8, 8)))
+        plt.imshow(images[n_train + x_indices[l]])
 
 with open('ll_test.txt', 'r') as file:
     old_ll_test = float(file.readline())

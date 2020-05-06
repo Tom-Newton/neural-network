@@ -103,8 +103,7 @@ class Network:
             f, self.pack_beta(), maxiter=max_iterations)
 
         if optimal[2]['warnflag'] != 0:
-            print(f'Search didn\'t converge.')  # {optimal}')
-            # raise ValueError(f'Search didn\'t converge. {optimal}')
+            print(f'Search didn\'t converge.')
 
         return optimal[0]
 
