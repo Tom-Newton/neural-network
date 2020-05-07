@@ -1,13 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn import datasets
 from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax
-
-digits = datasets.load_digits()
-images = digits.images
-labels = digits.target
-number_classes = 10
 
 
 def transform_image(image):
@@ -25,39 +19,46 @@ def un_transform_image(x, shape):
         index += shape[1]
     return image
 
+
 def normalise(x):
     n_data = x.shape[0]
     m = x.sum(axis=0)
     x0 = x - m/n_data
     s = np.sqrt((x0**2).sum(axis=0)/n_data)
-    ss = np.array([ tmp if tmp != 0 else 1 for tmp in s])
+    ss = np.array([tmp if tmp != 0 else 1 for tmp in s])
     x00 = x0 / ss
     return x00
 
-X = np.zeros((images.shape[0], images.shape[1]*images.shape[2]))
-for n, image in enumerate(images):
-    X[n, :] = transform_image(images[n, :, :])
 
-n_total = X.shape[0]
-n_train = 1300
+data_train = np.loadtxt('optdigits.tes', dtype=int, delimiter=',')
+data_test = np.loadtxt('optdigits.tra', dtype=int, delimiter=',')
 
-X = normalise(X)
-U, s, V = np.linalg.svd(X)
+images_train = data_train[:, :64]
+images_test = data_test[:, :64]
+labels_train = data_train[:, 64]
+labels_test = data_test[:, 64]
+number_classes = 10
 
+n_train = labels_train.shape[0]
+n_test = labels_test.shape[0]
+
+# Do a PCA
+X_train = normalise(images_train)
+X_test = normalise(images_test)
+U, s, V = np.linalg.svd(X_train)
 n_components = 50
-X2 = np.zeros((n_total, n_components))
+X2_train = np.zeros((n_train, n_components))
+X2_test = np.zeros((n_test, n_components))
 for i in range(n_components):
-    X2[:, i] = np.dot(X, V[i, :])
+    X2_train[:, i] = np.dot(X_train, V[i, :])
+    X2_test[:, i] = np.dot(X_test, V[i, :])
 
 # Create Y matrix using onehot encoding
-Y = np.zeros((labels.shape[0], number_classes))
+Y_train = np.zeros((labels_train.shape[0], number_classes))
+Y_test = np.zeros((labels_test.shape[0], number_classes))
 for k in range(number_classes):
-    Y[labels == k, k] = 1
-
-X_train = X2[0: n_train, :]
-X_test = X2[n_train:, :]
-Y_train = Y[0: n_train, :]
-Y_test = Y[n_train:, :]
+    Y_train[labels_train == k, k] = 1
+    Y_test[labels_test == k, k] = 1
 
 network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)])],
 
@@ -73,24 +74,24 @@ network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1,
                     SingleNeuron(list(range(n_components)))]])
 
 
-predictions, x = network.update_network(X_train)
+predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
-predictions, x = network.update_network(X_test)
+predictions, x = network.update_network(X2_test)
 ll_test = log_likelihood(Y_test, predictions)
 print(
-    f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}')
+    f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}')
 
 # w_data = np.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
-network.train(X_train, Y_train, 0.4)
+network.train(X2_train, Y_train, 0.3)
 
-predictions, x = network.update_network(X_train)
+predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
-predictions, x = network.update_network(X_test)
+predictions, x = network.update_network(X2_test)
 ll_test = log_likelihood(Y_test, predictions)
 print(
-    f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_total - n_train)}\n')
+    f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}\n')
 
 confusion_matrix = np.round(calculate_confusion_matrix(Y_test, predictions), 2)
 
@@ -122,7 +123,7 @@ for n in range(number_classes):
     for l in range(number_to_display):
         plt.subplot(1, number_to_display, l+1)
         plt.title(incorrect_class[l])
-        plt.imshow(images[n_train + x_indices[l]])
+        plt.imshow(un_transform_image(images_test[x_indices[l]], (8, 8)))
 
 with open('ll_test.txt', 'r') as file:
     old_ll_test = float(file.readline())
