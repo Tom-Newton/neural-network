@@ -97,6 +97,7 @@ class Network:
                             (packed_derivatives, neuron_derivative(Y_train)), axis=0)
             packed_derivatives = -1 * \
                 (packed_derivatives - (beta/sigma0_squared))
+            print(f)
             return f, packed_derivatives
 
         optimal = scipy.optimize.fmin_l_bfgs_b(
