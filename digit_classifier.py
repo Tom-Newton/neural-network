@@ -30,13 +30,13 @@ def normalise(x):
     return x00
 
 
-data_train = np.loadtxt('optdigits.tes', dtype=int, delimiter=',')
-data_test = np.loadtxt('optdigits.tra', dtype=int, delimiter=',')
+data_train = np.loadtxt('optdigits-highres.tes', dtype=int, delimiter=',')
+data_test = np.loadtxt('optdigits-highres.tra', dtype=int, delimiter=',')
 
-images_train = data_train[:, :64]
-images_test = data_test[:, :64]
-labels_train = data_train[:, 64]
-labels_test = data_test[:, 64]
+images_train = data_train[:, :1024]
+images_test = data_test[:, :1024]
+labels_train = data_train[:, 1024]
+labels_test = data_test[:, 1024]
 number_classes = 10
 
 n_train = labels_train.shape[0]
@@ -46,7 +46,7 @@ n_test = labels_test.shape[0]
 X_train = normalise(images_train)
 X_test = normalise(images_test)
 U, s, V = np.linalg.svd(X_train)
-n_components = 50
+n_components = 1000
 X2_train = np.zeros((n_train, n_components))
 X2_test = np.zeros((n_test, n_components))
 for i in range(n_components):
@@ -84,7 +84,7 @@ print(
 # w_data = np.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
-network.train(X2_train, Y_train, 0.3)
+network.train(X2_train, Y_train, 0.6)
 
 predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
@@ -123,14 +123,14 @@ for n in range(number_classes):
     for l in range(number_to_display):
         plt.subplot(1, number_to_display, l+1)
         plt.title(incorrect_class[l])
-        plt.imshow(un_transform_image(images_test[x_indices[l]], (8, 8)))
+        plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
 
 with open('ll_test.txt', 'r') as file:
     old_ll_test = float(file.readline())
 if old_ll_test <= ll_test:
     print('Updating old weights')
     np.save('w_data.npy', network.get_weights())
-    with open('ll_test.txt', 'w') as file:
+    with open('ll_test.txt', 'w+') as file:
         file.write(str(ll_test))
 
 plt.show()
