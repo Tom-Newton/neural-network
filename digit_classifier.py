@@ -99,12 +99,12 @@ for n in range(number_classes):
         plt.title(incorrect_class[l])
         plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
 
-with open('ll_test.txt', 'r') as file:
+with open('ll_test_digit.txt', 'r') as file:
     old_ll_test = float(file.readline())
 if old_ll_test <= ll_test:
     print('Updating old weights')
-    np.save('w_data.npy', network.get_weights())
-    with open('ll_test.txt', 'w+') as file:
+    np.save('w_data_digit.npy', network.get_weights())
+    with open('ll_test_digit.txt', 'w+') as file:
         file.write(str(ll_test))
 
 plt.show()

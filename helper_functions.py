@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 
+
 def transform_image(image):
     x = np.array([])
     for row in image:
@@ -17,6 +18,14 @@ def un_transform_image(x, shape):
     return image
 
 
+def un_transform_colour_image(x, shape):
+    n = shape[0]*shape[1]
+    red = un_transform_image(x[:n], shape)
+    green = un_transform_image(x[n:2*n], shape)
+    blue = un_transform_image(x[2*n:], shape)
+    return np.dstack((red, green, blue))
+
+
 def normalise(x):
     n_data = x.shape[0]
     m = x.sum(axis=0)
@@ -26,7 +35,8 @@ def normalise(x):
     x00 = x0 / ss
     return x00
 
+
 def unpickle(file):
-    with open (file, 'rb') as f:
+    with open(file, 'rb') as f:
         data = pickle.load(f, encoding='bytes')
     return data

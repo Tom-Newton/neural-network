@@ -84,6 +84,12 @@ class Network:
             predictions, x = self.update_network(X_train)
             f = -1*(log_likelihood(Y_train, predictions) +
                     log_prior_beta(beta, sigma0_squared))
+            print(f)
+            return f
+
+        def gradient_f(beta):
+            # Update w s for every neuron
+            self.unpack_beta(beta)
 
             packed_derivatives = np.array([])
             for i, layer_derivatives in enumerate(derivatives):
@@ -97,11 +103,10 @@ class Network:
                             (packed_derivatives, neuron_derivative(Y_train)), axis=0)
             packed_derivatives = -1 * \
                 (packed_derivatives - (beta/sigma0_squared))
-            print(f)
-            return f, packed_derivatives
+            return packed_derivatives
 
         optimal = scipy.optimize.fmin_l_bfgs_b(
-            f, self.pack_beta(), maxiter=max_iterations)
+            f, self.pack_beta(), fprime=gradient_f, pgtol=1, maxiter=max_iterations)
 
         if optimal[2]['warnflag'] != 0:
             print(f'Search didn\'t converge.')

@@ -21,7 +21,7 @@ X_train = normalise(images_train)
 X_test = normalise(images_test)
 U, s, V = np.linalg.svd(X_train)
 print(s)
-n_components = 50
+n_components = 200
 X2_train = np.zeros((n_train, n_components))
 X2_test = np.zeros((n_test, n_components))
 for i in range(n_components):
@@ -48,6 +48,17 @@ network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1,
                     SingleNeuron([(2, i) for i in range(10)]),
                     SingleNeuron([(2, i) for i in range(10)])],
 
+                   [SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)]),
+                    SingleNeuron([(3, i) for i in range(10)])],
+
                    [SingleNeuron(list(range(n_components))),
                     SingleNeuron(list(range(n_components))),
                     SingleNeuron(list(range(n_components))),
@@ -70,7 +81,7 @@ print(
 # w_data = np.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
-network.train(X2_train, Y_train, 0.6)
+network.train(X2_train, Y_train, 50)
 
 predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
@@ -109,7 +120,7 @@ print(
 #     for l in range(number_to_display):
 #         plt.subplot(1, number_to_display, l+1)
 #         plt.title(incorrect_class[l])
-#         plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
+#         plt.imshow(un_transform_colour_image(images_test[x_indices[l]], (32, 32)))
 
 with open('ll_test.txt', 'r') as file:
     old_ll_test = float(file.readline())
