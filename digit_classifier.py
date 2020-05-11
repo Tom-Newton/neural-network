@@ -1,4 +1,5 @@
 import numpy as np
+import cupy as cp
 import matplotlib.pyplot as plt
 from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax
@@ -34,6 +35,12 @@ for k in range(number_classes):
     Y_train[labels_train == k, k] = 1
     Y_test[labels_test == k, k] = 1
 
+# Convert to cupy arrays
+X2_train = cp.array(X2_train)
+X2_test = cp.array(X2_test)
+Y_train = cp.array(Y_train)
+Y_test = cp.array(Y_test)
+
 network = Network([[Softmax(number_classes, [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)])],
 
                    [SingleNeuron(list(range(n_components))),
@@ -55,7 +62,7 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}')
 
-# w_data = np.load('w_data.npy', allow_pickle=True)
+# w_data = cp.array(np.load('w_data.npy', allow_pickle=True))
 # network.set_weights(w_data)
 
 network.train(X2_train, Y_train, 0.6)
@@ -67,43 +74,43 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Final ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}\n')
 
-confusion_matrix = np.round(calculate_confusion_matrix(Y_test, predictions), 2)
+# confusion_matrix = np.round(calculate_confusion_matrix(Y_test, predictions), 2)
 
-_, ax = plt.subplots()
-ax.set_xticks(np.arange(number_classes))
-ax.set_yticks(np.arange(number_classes))
-ax.set_xticklabels(list(range(number_classes)))
-ax.set_yticklabels(list(range(number_classes)))
-ax.set_title('Confusion matrix P(predicted class | true class)')
-plt.xlabel('Predicted class')
-plt.ylabel('True class')
-for i in range(number_classes):
-    for j in range(number_classes):
-        ax.text(j, i, round(
-            confusion_matrix[i, j], 3), ha='center', va='center', color='w')
-ax.imshow(confusion_matrix)
+# _, ax = plt.subplots()
+# ax.set_xticks(np.arange(number_classes))
+# ax.set_yticks(np.arange(number_classes))
+# ax.set_xticklabels(list(range(number_classes)))
+# ax.set_yticklabels(list(range(number_classes)))
+# ax.set_title('Confusion matrix P(predicted class | true class)')
+# plt.xlabel('Predicted class')
+# plt.ylabel('True class')
+# for i in range(number_classes):
+#     for j in range(number_classes):
+#         ax.text(j, i, round(
+#             confusion_matrix[i, j], 3), ha='center', va='center', color='w')
+# ax.imshow(confusion_matrix)
 
-hard_predictions = np.argmax(predictions, 1)
-true_classes = np.argmax(Y_test, 1)
+# hard_predictions = np.argmax(predictions, 1)
+# true_classes = np.argmax(Y_test, 1)
 
-for n in range(number_classes):
-    fig = plt.figure()
-    fig.suptitle(f'Supposed to be {n}s but incorrectly categorised')
-    incorrect_predictions = np.logical_and(
-        true_classes == n, hard_predictions != n)
-    incorrect_class = hard_predictions[incorrect_predictions]
-    x_indices = incorrect_predictions.nonzero()[0]
-    number_to_display = np.sum(incorrect_predictions)
-    for l in range(number_to_display):
-        plt.subplot(1, number_to_display, l+1)
-        plt.title(incorrect_class[l])
-        plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
+# for n in range(number_classes):
+#     fig = plt.figure()
+#     fig.suptitle(f'Supposed to be {n}s but incorrectly categorised')
+#     incorrect_predictions = np.logical_and(
+#         true_classes == n, hard_predictions != n)
+#     incorrect_class = hard_predictions[incorrect_predictions]
+#     x_indices = incorrect_predictions.nonzero()[0]
+#     number_to_display = np.sum(incorrect_predictions)
+#     for l in range(number_to_display):
+#         plt.subplot(1, number_to_display, l+1)
+#         plt.title(incorrect_class[l])
+#         plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
 
 with open('ll_test_digit.txt', 'r') as file:
     old_ll_test = float(file.readline())
 if old_ll_test <= ll_test:
     print('Updating old weights')
-    np.save('w_data_digit.npy', network.get_weights())
+    np.save('w_data_digit.npy', cp.asnumpy(network.get_weights()))
     with open('ll_test_digit.txt', 'w+') as file:
         file.write(str(ll_test))
 

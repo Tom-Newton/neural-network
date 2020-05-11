@@ -1,4 +1,5 @@
 import numpy as np
+import cupy as cp
 
 # inputs is a list containing tuples:
 # If the input_type is a neuron_output (i, j)
@@ -8,7 +9,7 @@ import numpy as np
 class SingleNeuron:
     def __init__(self, input_locations):
         self.input_locations = input_locations
-        self.w = np.random.randn(len(self.input_locations) + 1)
+        self.w = cp.random.randn(len(self.input_locations) + 1)
         self.X_tilde = None
         self.output = None
         self.x = None
@@ -26,8 +27,8 @@ class SingleNeuron:
 
     def update_X_tilde(self, network, X):
         inputs = self.get_inputs(network, X)
-        inputs.insert(0, np.ones(inputs[0].shape))
-        self.X_tilde = np.concatenate(inputs, 1)
+        inputs.insert(0, cp.ones(inputs[0].shape))
+        self.X_tilde = cp.concatenate(inputs, 1)
 
     def update_output(self):
         prediction = predict(self.X_tilde, self.w)
@@ -35,7 +36,7 @@ class SingleNeuron:
         self.x = prediction[1]
 
     def reset_weights(self):
-        self.w = np.random.randn(len(self.input_locations) + 1)
+        self.w = cp.random.randn(len(self.input_locations) + 1)
 
     def set_weights(self, w):
         self.w = w
@@ -49,7 +50,7 @@ class Softmax(SingleNeuron):
         # Matrix with columns being w vectors for each class
         self.number_classes = number_classes
         super().__init__(input_locations)
-        self.W = np.random.randn(
+        self.W = cp.random.randn(
             len(self.input_locations) + 1, self.number_classes)
 
     def update_output(self):
@@ -58,7 +59,7 @@ class Softmax(SingleNeuron):
         self.output = prediction
 
     def reset_weights(self):
-        self.W = np.random.randn(
+        self.W = cp.random.randn(
             len(self.input_locations) + 1, self.number_classes)
 
     def set_weights(self, W):
@@ -69,16 +70,17 @@ class Softmax(SingleNeuron):
 
 
 # TODO: Fix the occasional numerical error
-def logistic(x): return 1.0 / (1.0 + np.exp(-x))
+def logistic(x):
+    return 1.0 / (1.0 + cp.exp(-x))
 
 
 def predict(X_tilde, w):
-    x = np.dot(X_tilde, w)
+    x = cp.dot(X_tilde, w)
     # TODO: Get rid of extra x variable. It's no longer needed for computing log likelihood
     return logistic(x), x
 
 
 def softmax_predict(X_tilde, W):
     # Returns a matrix: row with x_tilde for each n and column with w for each class
-    a = np.exp(np.dot(X_tilde, (W - np.amax(W))))
-    return a/(np.sum(a, axis=1)[:, np.newaxis])
+    a = cp.exp(cp.dot(X_tilde, (W - cp.amax(W))))
+    return a/(cp.sum(a, axis=1)[:, np.newaxis])
