@@ -19,15 +19,15 @@ n_train = labels_train.shape[0]
 n_test = labels_test.shape[0]
 
 # Do a PCA
-X_train = normalise(images_train)
-X_test = normalise(images_test)
-U, s, V = np.linalg.svd(X_train)
+X_train = cp.array(normalise(images_train))
+X_test = cp.array(normalise(images_test))
+U, s, V = cp.linalg.svd(X_train)
 n_components = 1000
-X2_train = np.zeros((n_train, n_components))
-X2_test = np.zeros((n_test, n_components))
+X2_train = cp.zeros((n_train, n_components))
+X2_test = cp.zeros((n_test, n_components))
 for i in range(n_components):
-    X2_train[:, i] = np.dot(X_train, V[i, :])
-    X2_test[:, i] = np.dot(X_test, V[i, :])
+    X2_train[:, i] = cp.dot(X_train, V[i, :])
+    X2_test[:, i] = cp.dot(X_test, V[i, :])
 
 # Create Y matrix using onehot encoding
 Y_train = np.zeros((labels_train.shape[0], number_classes))
@@ -37,8 +37,6 @@ for k in range(number_classes):
     Y_test[labels_test == k, k] = 1
 
 # Convert to cupy arrays
-X2_train = cp.array(X2_train)
-X2_test = cp.array(X2_test)
 Y_train = cp.array(Y_train)
 Y_test = cp.array(Y_test)
 
@@ -63,7 +61,7 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}')
 
-# w_data = cp.array(np.load('w_data.npy', allow_pickle=True))
+# w_data = cp.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
 def train():
@@ -115,7 +113,7 @@ with open('ll_test_digit.txt', 'r') as file:
     old_ll_test = float(file.readline())
 if old_ll_test <= ll_test:
     print('Updating old weights')
-    np.save('w_data_digit.npy', cp.asnumpy(network.get_weights()))
+    cp.save('w_data_digit.npy', network.get_weights())
     with open('ll_test_digit.txt', 'w+') as file:
         file.write(str(ll_test))
 
