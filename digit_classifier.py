@@ -60,8 +60,8 @@ print(
 # network.set_weights(w_data)
 
 def train():
-    network.train(X2_train, Y_train, 0.6)
     network.reset_weights()
+    network.train(X2_train, Y_train, 0.6)
 
 print(f'training time = {timeit(stmt=train, number = 10)}')
 
