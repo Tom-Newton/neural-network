@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from timeit import timeit
 from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax
 from helper_functions import normalise, un_transform_image
@@ -20,7 +21,7 @@ n_test = labels_test.shape[0]
 X_train = normalise(images_train)
 X_test = normalise(images_test)
 U, s, V = np.linalg.svd(X_train)
-n_components = 200
+n_components = 1000
 X2_train = np.zeros((n_train, n_components))
 X2_test = np.zeros((n_test, n_components))
 for i in range(n_components):
@@ -58,7 +59,10 @@ print(
 # w_data = np.load('w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
-network.train(X2_train, Y_train, 0.6)
+def train():
+    network.train(X2_train, Y_train, 0.6)
+
+print(f'training time = {timeit(stmt=train, number = 100)}')
 
 predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
