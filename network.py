@@ -112,7 +112,9 @@ class Network:
             f, cp.asnumpy(self.pack_beta()), fprime=gradient_f, pgtol=1, maxiter=max_iterations)
 
         if optimal[2]['warnflag'] != 0:
-            print(f'Search didn\'t converge.')
+            print(f'Search didn\'t converge. warnflag {optimal[2]["warnflag"]}')
+            if optimal[2]['warnflag'] == 2:
+                print(optimal[2]['warnflag']['task'])
 
         return optimal[0]
 
