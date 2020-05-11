@@ -61,8 +61,9 @@ print(
 
 def train():
     network.train(X2_train, Y_train, 0.6)
+    network.reset_weights()
 
-print(f'training time = {timeit(stmt=train, number = 100)}')
+print(f'training time = {timeit(stmt=train, number = 10)}')
 
 predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
