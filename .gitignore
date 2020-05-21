@@ -1,0 +1,4 @@
+.vscode
+*pycache*
+cifar*
+digit_data*

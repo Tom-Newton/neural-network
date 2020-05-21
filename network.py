@@ -86,7 +86,6 @@ class Network:
             predictions, x = self.update_network(X_train)
             f = -1*(log_likelihood(Y_train, predictions) +
                     log_prior_beta(beta, sigma0_squared))
-            print(f)
             return f
 
         def gradient_f(beta):
