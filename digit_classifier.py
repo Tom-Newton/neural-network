@@ -5,8 +5,10 @@ from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax
 from helper_functions import normalise, un_transform_image
 
-data_train = np.loadtxt('digit_data/optdigits-highres.tes', dtype=int, delimiter=',')
-data_test = np.loadtxt('digit_data/optdigits-highres.tra', dtype=int, delimiter=',')
+data_train = np.loadtxt(
+    'digit_data/optdigits-highres.tes', dtype=int, delimiter=',')
+data_test = np.loadtxt(
+    'digit_data/optdigits-highres.tra', dtype=int, delimiter=',')
 
 images_train = data_train[:, :1024]
 images_test = data_test[:, :1024]
