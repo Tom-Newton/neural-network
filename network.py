@@ -109,10 +109,11 @@ class Network:
             return cp.asnumpy(packed_derivatives)
 
         optimal = scipy.optimize.fmin_l_bfgs_b(
-            f, cp.asnumpy(self.pack_beta()), fprime=gradient_f, pgtol=1, maxiter=max_iterations)
+            f, cp.asnumpy(self.pack_beta()), fprime=gradient_f, pgtol=1, maxfun=max_iterations, maxiter=max_iterations)
 
         if optimal[2]['warnflag'] != 0:
-            print(f'Search didn\'t converge. warnflag {optimal[2]["warnflag"]}')
+            print(
+                f'Search didn\'t converge. warnflag {optimal[2]["warnflag"]}')
             if optimal[2]['warnflag'] == 2:
                 print(optimal[2]['warnflag']['task'])
 
