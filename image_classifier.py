@@ -81,6 +81,7 @@ ll_test = log_likelihood(Y_test, predictions)
 print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}')
 
+# To load previously trained weights
 # w_data = np.load('cifar-10/w_data.npy', allow_pickle=True)
 # network.set_weights(w_data)
 
