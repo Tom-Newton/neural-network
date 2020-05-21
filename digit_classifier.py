@@ -61,10 +61,10 @@ print(
     f'Initial ll_train = {ll_train/n_train}, ll_test = {ll_test/(n_test)}')
 
 # To load previously trained weights
-w_data = np.load('digit_data/w_data.npy', allow_pickle=True)
-network.set_weights(w_data)
+# w_data = np.load('digit_data/w_data.npy', allow_pickle=True)
+# network.set_weights(w_data)
 
-# network.train(X2_train, Y_train, 0.6)
+network.train(X2_train, Y_train, 0.6)
 
 predictions, x = network.update_network(X2_train)
 ll_train = log_likelihood(Y_train, predictions)
@@ -111,8 +111,12 @@ for n in range(number_classes):
         plt.title(incorrect_class[l])
         plt.imshow(un_transform_image(images_test[x_indices[l]], (32, 32)))
 
-with open('digit_data/ll_test.txt', 'r') as file:
-    old_ll_test = float(file.readline())
+try:
+    with open('digit_data/ll_test.txt', 'r') as file:
+        old_ll_test = float(file.readline())
+except FileNotFoundError:
+    old_ll_test = -np.inf
+
 if old_ll_test <= ll_test:
     print('Updating old weights')
     np.save('digit_data/w_data.npy', network.get_weights())
