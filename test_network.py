@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from network import Network, log_likelihood
+from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
 
 
@@ -11,13 +11,21 @@ class NetworkTests(unittest.TestCase):
                                  SingleNeuron([(2, 0), (2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
 
+        self.w_data = [
+            [np.array([[1, 3, 0, 6],
+                       [1, 2, -1, 3]])],
+            [np.array([2, -1, 0]), np.array([-1, 2, 2])],
+            [np.array([2, -1, 0]), np.array([-1, 2, 2])]
+        ]
+
         self.X = np.array([[1, 3, 2],
                            [2, 4, 6]])
 
         self.Y = np.array([[0, 1],
                            [1, 0]])
 
-        self.beta = np.array([2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+        self.beta = np.array(
+            [2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
 
     def test_log_likelihood(self):
         output = self.network.update_network(self.X)[0]
@@ -41,7 +49,8 @@ class NetworkTests(unittest.TestCase):
                             output2 = self.network.update_network(self.X)[0]
                             numerical = (log_likelihood(
                                 self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-                            self.assertAlmostEqual(numerical, analytical[k][l], 5)
+                            self.assertAlmostEqual(
+                                numerical, analytical[k][l], 5)
                     else:
                         self.network.data[test_i][test_j].w[k] -= dw
                         output1 = self.network.update_network(self.X)[0]
@@ -83,10 +92,24 @@ class NetworkTests(unittest.TestCase):
         self.network.update_network(self.X)
         self.assertEqual(type(self.network.output()[0]), np.ndarray)
 
+    def test_reset_weights(self):
+        self.network.reset_weights()
+
+    def test_set_weights(self):
+        self.network.set_weights(self.w_data)
+        for w_layer, layer in zip(self.w_data, self.network.data):
+            for w, neuron in zip(w_layer, layer):
+                if type(neuron) == Softmax:
+                    self.assertEqual(w.shape, neuron.W.shape)
+                else:
+                    self.assertListEqual(list(w), list(neuron.w))
+
     def test_unpack_beta(self):
         self.network.unpack_beta(self.beta)
-        self.assertListEqual(list(self.network.data[0][0].W[:, 0]), [2, 5, 8, 1])
-        self.assertListEqual(list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
+        self.assertListEqual(
+            list(self.network.data[0][0].W[:, 0]), [2, 5, 8, 1])
+        self.assertListEqual(
+            list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
         self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
         self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
         self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
@@ -98,8 +121,11 @@ class NetworkTests(unittest.TestCase):
         self.assertListEqual(list(beta), list(self.beta))
 
     def test_train(self):
-        # TODO: Try to make this converge
         self.network.train(self.X, self.Y, 1, 20)
+
+    def test_calculate_confusion_matrix(self):
+        calculate_confusion_matrix(self.Y, np.array([[0.4, 0.6],
+                                                     [0.4, 0.6]]))
 
 
 class SoftmaxTests(unittest.TestCase):
