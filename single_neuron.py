@@ -48,6 +48,13 @@ class SingleNeuron:
     def get_weights(self):
         return self.w
 
+    def get_new_stem(self, network_data, input_location, stem):
+        def new_stem(Y, input_location=input_location):
+            # TODO: Can this be shifted back a level so we can get output from self.output
+            output = network_data[input_location[0]][input_location[1]].output
+            return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
+        return new_stem
+
 
 class Softmax(SingleNeuron):
     def __init__(self, number_classes, input_locations):
@@ -71,6 +78,13 @@ class Softmax(SingleNeuron):
 
     def get_weights(self):
         return self.W
+
+    def get_new_stem(self, network_data, input_location, stem):
+        def new_stem(Y):
+            # TODO: Can this be shifted back a level so we can get output from self.output
+            output = network_data[input_location[0]][input_location[1]].output
+            return (cp.dot(Y, self.W.T)[:, input_location[1] + 1] - cp.sum(network_data[0][0].output*self.W[input_location[1] + 1, :], axis=1))*output*(1 - output)
+        return new_stem
 
 
 # TODO: Fix the occasional numerical error
