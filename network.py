@@ -28,17 +28,9 @@ class Network:
 
             for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    def new_stem(Y, input_location=input_location):
-                        output = self.data[input_location[0]
-                                           ][input_location[1]].output
-                        # TODO: Is there a nicer way to do this Manually fill [0, 0] then run function after that
-                        if i == 0:
-                            W = self.data[i][j].W
-                            return (cp.dot(Y, W.T)[:, input_location[1] + 1] - cp.sum(self.data[0][0].output*W[input_location[1] + 1, :], axis=1))*output*(1 - output)
-                        else:
-                            return stem(Y)*self.data[i][j].w[input_location[1] + 1]*output*(1 - output)
+                    neuron = self.data[i][j]
                     differentiate(
-                        new_stem, input_location[0], input_location[1])
+                        neuron.get_new_stem(self.data, input_location, stem), input_location[0], input_location[1])
         differentiate()
         return derivatives
 
