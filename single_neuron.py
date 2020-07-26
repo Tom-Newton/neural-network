@@ -47,9 +47,9 @@ class SingleNeuron:
 
 class Softmax(SingleNeuron):
     def __init__(self, number_classes, input_locations):
-        # Matrix with columns being w vectors for each class
         self.number_classes = number_classes
         super().__init__(input_locations)
+        # Matrix with columns being w vectors for each class
         self.W = cp.random.randn(
             len(self.input_locations) + 1, self.number_classes)
 
@@ -67,6 +67,20 @@ class Softmax(SingleNeuron):
 
     def get_weights(self):
         return self.W
+
+
+class Convolutional:
+    def __init__(self, input_locations):
+        self.input_locations = input_locations
+        # Matrix of 2D weight matrix
+        self.W = cp.random.randn(self.input_locations.shape)
+        self.X_tilde = None
+        self.output = None
+        self.x = None
+
+    def get_inputs(self, )
+
+# TODO: Add a pooling/subsampling neuron
 
 
 # TODO: Fix the occasional numerical error

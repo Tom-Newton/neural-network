@@ -20,6 +20,8 @@ class Network:
         # functions of only Y.
 
         def differentiate(stem=lambda Y: (Y - self.data[0][0].output), i=0, j=0):
+
+            # TODO: Put the new_derivative and new_stem functions in the corresponding neuron to get the right type
             def new_derivative(Y, derivative=derivatives[i][j], stem=stem):
                 return derivative(Y) + cp.dot(self.data[i][j].X_tilde.T, stem(Y))
             derivatives[i][j] = new_derivative
