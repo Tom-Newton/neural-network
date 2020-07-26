@@ -14,19 +14,23 @@ class SingleNeuron:
         self.output = None
         self.x = None
 
-    def get_inputs(self, network, X):
+    def get_inputs(self, network_data, X):
         inputs = []
         for input_location in self.input_locations:
-            # 1D arrays need to be converted to column vectors so they can be concatenated
-            if type(input_location) == tuple:
-                inputs.append(network[input_location[0]]
-                              [input_location[1]].output[:, np.newaxis])
-            else:
-                inputs.append(X[:, input_location][:, np.newaxis])
+            try:
+                # 1D arrays need to be converted to column vectors so they can be concatenated
+                if type(input_location) == tuple:
+                    inputs.append(network_data[input_location[0]]
+                                  [input_location[1]].output[:, np.newaxis])
+                else:
+                    inputs.append(X[:, input_location][:, np.newaxis])
+            except IndexError:
+                raise IndexError(f'Incorrectly defined input locations. Input location {input_location} can\'t be '
+                                 f'found from neuron {find_neuron_location(self, network_data)}')
         return inputs
 
-    def update_X_tilde(self, network, X):
-        inputs = self.get_inputs(network, X)
+    def update_X_tilde(self, network_data, X):
+        inputs = self.get_inputs(network_data, X)
         inputs.insert(0, cp.ones(inputs[0].shape))
         self.X_tilde = cp.concatenate(inputs, 1)
 
@@ -84,3 +88,11 @@ def softmax_predict(X_tilde, W):
     # Returns a matrix: row with x_tilde for each n and column with w for each class
     a = cp.exp(cp.dot(X_tilde, (W - cp.amax(W))))
     return a/(cp.sum(a, axis=1)[:, np.newaxis])
+
+
+def find_neuron_location(neuron_to_find, network_data):
+    for i, layer in enumerate(network_data):
+        for j, neuron in enumerate(layer):
+            if neuron is neuron_to_find:
+                return (i, j)
+    return None
