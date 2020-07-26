@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import cupy as cp
 from network import Network, log_likelihood, calculate_confusion_matrix
 from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
 
@@ -12,19 +13,19 @@ class NetworkTests(unittest.TestCase):
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
 
         self.w_data = [
-            [np.array([[1, 3, 0, 6],
+            [cp.array([[1, 3, 0, 6],
                        [1, 2, -1, 3]])],
-            [np.array([2, -1, 0]), np.array([-1, 2, 2])],
-            [np.array([2, -1, 0]), np.array([-1, 2, 2])]
+            [cp.array([2, -1, 0]), cp.array([-1, 2, 2])],
+            [cp.array([2, -1, 0]), cp.array([-1, 2, 2])]
         ]
 
-        self.X = np.array([[1, 3, 2],
+        self.X = cp.array([[1, 3, 2],
                            [2, 4, 6]])
 
-        self.Y = np.array([[0, 1],
+        self.Y = cp.array([[0, 1],
                            [1, 0]])
 
-        self.beta = np.array(
+        self.beta = cp.array(
             [2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
 
     def test_log_likelihood(self):
@@ -50,7 +51,7 @@ class NetworkTests(unittest.TestCase):
                             numerical = (log_likelihood(
                                 self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
                             self.assertAlmostEqual(
-                                numerical, analytical[k][l], 5)
+                                cp.asnumpy(numerical), cp.asnumpy(analytical[k][l]), 5)
                     else:
                         self.network.data[test_i][test_j].w[k] -= dw
                         output1 = self.network.update_network(self.X)[0]
@@ -58,26 +59,26 @@ class NetworkTests(unittest.TestCase):
                         output2 = self.network.update_network(self.X)[0]
                         numerical = (log_likelihood(
                             self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-                        self.assertAlmostEqual(numerical, analytical[k], 5)
+                        self.assertAlmostEqual(cp.asnumpy(numerical), cp.asnumpy(analytical[k]), 5)
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
-        self.assertTrue((inputs[0] == np.array([[1],
+        self.assertTrue((inputs[0] == cp.array([[1],
                                                 [2]])).all())
-        self.assertTrue((inputs[1] == np.array([[3],
+        self.assertTrue((inputs[1] == cp.array([[3],
                                                 [4]])).all())
         for index, neuron in enumerate(self.network.data[2]):
-            neuron.output = index * np.array([1, 3])
+            neuron.output = index * cp.array([1, 3])
         inputs = self.network.data[1][0].get_inputs(self.network.data, self.X)
-        self.assertTrue((inputs[0] == np.array([[0],
+        self.assertTrue((inputs[0] == cp.array([[0],
                                                 [0]])).all())
-        self.assertTrue((inputs[1] == np.array([[1],
+        self.assertTrue((inputs[1] == cp.array([[1],
                                                 [3]])).all())
 
     def test_update_X_tilde(self):
         neuron = self.network.data[2][0]
         neuron.update_X_tilde(self.network, self.X)
-        self.assertTrue((neuron.X_tilde == np.array([[1, 1, 3],
+        self.assertTrue((neuron.X_tilde == cp.array([[1, 1, 3],
                                                      [1, 2, 4]])).all())
 
     def test_update_output(self):
@@ -90,7 +91,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_output(self):
         self.network.update_network(self.X)
-        self.assertEqual(type(self.network.output()[0]), np.ndarray)
+        self.assertEqual(type(self.network.output()[0]), cp.ndarray)
 
     def test_reset_weights(self):
         self.network.reset_weights()
@@ -124,17 +125,17 @@ class NetworkTests(unittest.TestCase):
         self.network.train(self.X, self.Y, 1, 20)
 
     def test_calculate_confusion_matrix(self):
-        calculate_confusion_matrix(self.Y, np.array([[0.4, 0.6],
+        calculate_confusion_matrix(self.Y, cp.array([[0.4, 0.6],
                                                      [0.4, 0.6]]))
 
 
 class SoftmaxTests(unittest.TestCase):
     def setUp(self):
-        self.X_tilde = np.array([[1, 3, 2],
+        self.X_tilde = cp.array([[1, 3, 2],
                                  [1, 4, 6],
                                  [1, 2, 3]])
 
-        self.W = np.array([[2, 0.6],
+        self.W = cp.array([[2, 0.6],
                            [2.1, 1.9],
                            [1, 1.2]])
 
