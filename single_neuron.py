@@ -90,8 +90,8 @@ class Softmax(SingleNeuron):
 class Convolutional:
     def __init__(self, input_locations):
         self.input_locations = input_locations
-        # Matrix of 2D weight matrix
-        self.W = cp.random.randn(self.input_locations.shape)
+        # 1D stack of 2D weight matrix. Stored 1D so they can be easily used in SingleNeuron
+        self.w = cp.random.randn(self.input_locations.shape[0]*self.input_locations.shape[1] + 1)
         self.X_tilde = None
         self.output = None
         self.x = None
