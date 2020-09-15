@@ -38,8 +38,7 @@ class Network:
         for layer in self.data[::-1]:
             # Iterates layers in reverse order
             for neuron in layer:
-                neuron.update_X_tilde(self.data, X)
-                neuron.update_output()
+                neuron.update_output(self.data, X)
         return self.data[0][0].output, self.data[0][0].x
 
     def output(self):

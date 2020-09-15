@@ -34,7 +34,8 @@ class SingleNeuron:
         inputs.insert(0, cp.ones(inputs[0].shape))
         self.X_tilde = cp.concatenate(inputs, 1)
 
-    def update_output(self):
+    def update_output(self, network_data, X):
+        self.update_X_tilde(network_data, X)
         prediction = predict(self.X_tilde, self.w)
         self.output = prediction[0]
         self.x = prediction[1]
@@ -64,7 +65,8 @@ class Softmax(SingleNeuron):
         self.W = cp.random.randn(
             len(self.input_locations) + 1, self.number_classes)
 
-    def update_output(self):
+    def update_output(self, network_data, X):
+        self.update_X_tilde(network_data, X)
         # Will be a vector of probabilities of each class
         prediction = softmax_predict(self.X_tilde, self.W)
         self.output = prediction
@@ -79,7 +81,7 @@ class Softmax(SingleNeuron):
     def get_weights(self):
         return self.W
 
-    def get_new_stem(self, network_data, input_location, stem):
+    def get_new_stem(self, network_data, input_location, _):
         def new_stem(Y):
             # TODO: Can this be shifted back a level so we can get output from self.output
             output = network_data[input_location[0]][input_location[1]].output

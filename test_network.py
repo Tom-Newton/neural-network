@@ -1,4 +1,5 @@
 import unittest
+import unittest.mock
 import numpy as np
 import cupy as cp
 from network import Network, log_likelihood, calculate_confusion_matrix
@@ -59,7 +60,8 @@ class NetworkTests(unittest.TestCase):
                         output2 = self.network.update_network(self.X)[0]
                         numerical = (log_likelihood(
                             self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-                        self.assertAlmostEqual(cp.asnumpy(numerical), cp.asnumpy(analytical[k]), 5)
+                        self.assertAlmostEqual(cp.asnumpy(
+                            numerical), cp.asnumpy(analytical[k]), 5)
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
@@ -83,8 +85,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_update_output(self):
         neuron = self.network.data[2][0]
-        neuron.update_X_tilde(self.network, self.X)
-        neuron.update_output()
+        neuron.update_output(self.network, self.X)
         self.assertTrue((neuron.output == predict(
             neuron.X_tilde, neuron.w)[0]).all())
         self.assertEqual(neuron.output.shape, (2, ))
@@ -145,8 +146,10 @@ class SoftmaxTests(unittest.TestCase):
         self.softmax.X_tilde = self.X_tilde
         self.softmax.W = self.W
 
+        self.softmax.update_X_tilde = unittest.mock.Mock()
+
     def test_softmax_predict(self):
-        self.softmax.update_output()
+        self.softmax.update_output(None, None)
         self.assertEqual(self.softmax.output.shape, (3, 2))
 
 
