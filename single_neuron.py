@@ -18,13 +18,15 @@ class SingleNeuron:
         # 1D arrays need to be converted to column vectors so they can be concatenated
         # TODO: Can the [:, np.newaxis] be avoided using cp.array(inputs).T? Is this faster?
         if type(input_location) == tuple:
-            input_ = network_data[input_location[0]][input_location[1]].output[:, np.newaxis]
+            input_ = network_data[input_location[0]
+                                  ][input_location[1]].output[:, np.newaxis]
         else:
             input_ = X[:, input_location][:, np.newaxis]
         if len(input_.shape) > 2:
             if (input_.shape[1], input_.shape[2]) == (1, 1):
                 return input_[:, 0, 0]
-            raise ValueError(f'SingleNeuron given 2D array with shape {input_.shape} as an input. A scalar was expected')
+            raise ValueError('SingleNeuron given 2D arrays as an input. scalars were expected. Input shape = '
+                             f'{input_.shape}')
         return input_
 
     def _get_inputs(self, network_data, X):
@@ -123,6 +125,9 @@ class Convolutional(SingleNeuron):
         else:
             input_ = X[:, input_location, :, :]
         self.input_shape = input_.shape
+        if len(self.input_shape) < 3:
+            raise ValueError('Convolutional given scalars an input. 2D arrays were expected. Input shape = '
+                             f'{input_.shape}')
         self.output_shape = (
             self.input_shape[0],
             self.input_shape[1] - (self.filter_shape[0] - 1),
@@ -138,7 +143,8 @@ class Convolutional(SingleNeuron):
         return cp.concatenate([cp.array([1])] + [input_row for input_row in input_section], axis=0)
 
     def _update_X_tilde(self, input_, a, b):
-        input_sections = input_[:, a: a + self.filter_shape[0], b: b + self.filter_shape[1]]
+        input_sections = input_[
+            :, a: a + self.filter_shape[0], b: b + self.filter_shape[1]]
         self.X_tilde = cp.array([self._map_inputs_for_convolution(
             input_section) for input_section in input_sections])
 
