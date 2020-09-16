@@ -157,7 +157,7 @@ class ConvolutionalTests(unittest.TestCase):
     def setUp(self):
         self.w = cp.array([1, 2, 3, 4, 5, 6, 7])
         self.convolutional = Convolutional(
-            input_location=0, filter_shape=(2, 3), input_shape=(4, 5))
+            input_location=0, filter_shape=(2, 3))
         self.convolutional.w = self.w
 
     def test_get_W_matrix(self):
@@ -170,9 +170,8 @@ class ConvolutionalTests(unittest.TestCase):
 class ConvolutionalNetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = Network([[SingleNeuron(input_locations=[(1, 0)])],
-                                [Convolutional(input_location=(
-                                    2, 0), filter_shape=(2, 2), input_shape=(1, 2))],
-                                [Convolutional(input_location=0, filter_shape=(2, 2), input_shape=(2, 3))]])
+                                [Convolutional(input_location=(2, 0), filter_shape=(1, 2))],
+                                [Convolutional(input_location=0, filter_shape=(2, 2))]])
 
         self.X = cp.array([
             [
@@ -205,10 +204,24 @@ class ConvolutionalNetworkTests(unittest.TestCase):
 
     def test_update_X_tilde(self):
         neuron = self.network.data[2][0]
-        neuron._update_X_tilde(self.network, self.X, a=0, b=0)
+        input_ = neuron._get_inputs(self.network, self.X)[0]
+        neuron._update_X_tilde(input_, a=0, b=0)
         cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
                                                                 [1, 3, 1, 2, 6]]))
+        neuron._update_X_tilde(input_, a=0, b=1)
+        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 2, 3, 5, 6],
+                                                                [1, 1, 2, 6, 4]]))
 
+    def test_update_output(self):
+        neuron = self.network.data[2][0]
+        neuron.update_output(self.network, self.X)
+        cp.testing.assert_array_equal(neuron.output[:, 0, 1], predict(neuron.X_tilde, neuron.w)[0])
+        self.assertEqual(neuron.output.shape, (2, 1, 2))
+
+    def test_output(self):
+        self.network.update_network(self.X)
+        self.assertEqual(type(self.network.output()[0]), cp.ndarray)
+        
         #     # TODO: Maybe move this to NetworkTests to reduce duplicate code
         #     def test_get_differentials(self):
         #         derivatives = self.network.get_derivatives()
