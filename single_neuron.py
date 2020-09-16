@@ -25,8 +25,8 @@ class SingleNeuron:
         if len(input_.shape) > 2:
             if (input_.shape[1], input_.shape[2]) == (1, 1):
                 return input_[:, 0, 0]
-            raise ValueError('SingleNeuron given 2D arrays as an input. scalars were expected. Input shape = '
-                             f'{input_.shape}')
+            raise ValueError('SingleNeuron given 2D arrays as an input. scalars were expected. '
+                             f'input_location = {input_location} input shape = {input_.shape}')
         return input_
 
     def _get_inputs(self, network_data, X):
@@ -61,7 +61,6 @@ class SingleNeuron:
 
     def get_new_stem(self, network_data, input_location, stem):
         def new_stem(Y, input_location=input_location):
-            # TODO: Can this be shifted back a level so we can get output from self.output
             output = network_data[input_location[0]][input_location[1]].output
             return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
         return new_stem
@@ -93,7 +92,6 @@ class Softmax(SingleNeuron):
 
     def get_new_stem(self, network_data, input_location, _):
         def new_stem(Y):
-            # TODO: Can this be shifted back a level so we can get output from self.output
             output = network_data[input_location[0]][input_location[1]].output
             return (cp.dot(Y, self.W.T)[:, input_location[1] + 1] - cp.sum(network_data[0][0].output*self.W[input_location[1] + 1, :], axis=1))*output*(1 - output)
         return new_stem
@@ -126,8 +124,8 @@ class Convolutional(SingleNeuron):
             input_ = X[:, input_location, :, :]
         self.input_shape = input_.shape
         if len(self.input_shape) < 3:
-            raise ValueError('Convolutional given scalars an input. 2D arrays were expected. Input shape = '
-                             f'{input_.shape}')
+            raise ValueError('Convolutional given scalars an input. 2D arrays were expected. '
+                             f'input_location = {input_location} input shape = {input_.shape}')
         self.output_shape = (
             self.input_shape[0],
             self.input_shape[1] - (self.filter_shape[0] - 1),
