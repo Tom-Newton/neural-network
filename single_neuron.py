@@ -14,16 +14,19 @@ class SingleNeuron:
         self.output = None
         self.x = None
 
+    def _get_input(self, input_location, network_data, X):
+        # 1D arrays need to be converted to column vectors so they can be concatenated
+        # TODO: Can the [:, np.newaxis] be avoided using cp.array(inputs).T? Is this faster?
+        if type(input_location) == tuple:
+            return network_data[input_location[0]][input_location[1]].output[:, np.newaxis]
+        else:
+            return X[:, input_location][:, np.newaxis]
+
     def _get_inputs(self, network_data, X):
         inputs = []
         for input_location in self.input_locations:
             try:
-                # 1D arrays need to be converted to column vectors so they can be concatenated
-                if type(input_location) == tuple:
-                    inputs.append(network_data[input_location[0]]
-                                  [input_location[1]].output[:, np.newaxis])
-                else:
-                    inputs.append(X[:, input_location][:, np.newaxis])
+                inputs.append(self._get_input(input_location, network_data, X))
             except IndexError:
                 raise IndexError(f'Incorrectly defined input locations. Input location {input_location} can\'t be '
                                  f'found from neuron {find_neuron_location(self, network_data)}')
@@ -111,27 +114,19 @@ class Convolutional(SingleNeuron):
             W[row_number, :] = self.w[i: i + self.filter_shape[1]]
         return W, bias
 
-    def _map_inputs_for_convolution(self, inputs, a, b):
-        mapped_inputs = []
-        for full_input in inputs[0]:
-            input_section = self._get_input_section(full_input[0], a, b)
-            print(cp.concatenate(
-                [input_row for input_row in input_section], axis=0)[np.newaxis, :])
-            mapped_inputs.append(cp.concatenate(
-                [input_row for input_row in input_section], axis=0)[np.newaxis, :])
-        return mapped_inputs
+    def _get_input(self, input_location, network_data, X):
+        if type(input_location) == tuple:
+            return network_data[input_location[0]][input_location[1]].output
+        else:
+            return X[:, input_location, :, :]
 
-    def _get_input_section(self, full_input, a, b):
-        # Input section is the rectangle of pixels which the filter is positioned over.
-        # It will have shape self.filter_shape
-        return full_input[a: a + self.filter_shape[0], b: a + self.filter_shape[1]]
+    def _map_inputs_for_convolution(self, input_section):
+        return cp.concatenate([cp.array([1])] + [input_row for input_row in input_section], axis=0)
 
     def _update_X_tilde(self, network_data, X, a, b):
-        inputs = self._get_inputs(network_data, X)
-        inputs = self._map_inputs_for_convolution(inputs, a, b)
-        print(inputs)
-        inputs.insert(0, cp.ones(inputs[0].shape))
-        self.X_tilde = cp.concatenate(inputs, 0)
+        input_sections = self._get_inputs(network_data, X)[
+            0][:, a: a + self.filter_shape[0], b: a + self.filter_shape[1]]
+        self.X_tilde = cp.array([self._map_inputs_for_convolution(input_section) for input_section in input_sections])
 
     def update_output(self, network_data, X):
         for a in range(self.output_shape[0]):

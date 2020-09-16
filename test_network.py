@@ -156,7 +156,8 @@ class SoftmaxTests(unittest.TestCase):
 class ConvolutionalTests(unittest.TestCase):
     def setUp(self):
         self.w = cp.array([1, 2, 3, 4, 5, 6, 7])
-        self.convolutional = Convolutional(input_location=0, filter_shape=(2, 3), input_shape=(4, 5))
+        self.convolutional = Convolutional(
+            input_location=0, filter_shape=(2, 3), input_shape=(4, 5))
         self.convolutional.w = self.w
 
     def test_get_W_matrix(self):
@@ -187,26 +188,26 @@ class ConvolutionalNetworkTests(unittest.TestCase):
 
     def test_get_inputs(self):
         inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
-        cp.testing.assert_array_equal(inputs, [self.X])
+        cp.testing.assert_array_equal(inputs, [cp.array([
+            [[1, 2, 3],
+             [4, 5, 6]],
+
+            [[3, 1, 2],
+             [2, 6, 4]],
+        ])])
         self.network.data[2][0].output = cp.array([[[1, 2]],
                                                    [[3, 1]], ])
         inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
         cp.testing.assert_array_equal(inputs, [cp.array([
-            [
-                [[1, 2]], ],
-            [
-                [[3, 1]], ]
+            [[1, 2]],
+            [[3, 1]],
         ])])
 
     def test_update_X_tilde(self):
         neuron = self.network.data[2][0]
-        a = 0
-        b = 0
-        # TODO: iterate checking this function for all a and b
-        neuron._update_X_tilde(self.network, self.X, a, b)
-        print(neuron.X_tilde)
-        # self.assertTrue((neuron.X_tilde == cp.array([[1, 1, 3],
-        #                                              [1, 2, 4]])).all())
+        neuron._update_X_tilde(self.network, self.X, a=0, b=0)
+        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
+                                                                [1, 3, 1, 2, 6]]))
 
         #     # TODO: Maybe move this to NetworkTests to reduce duplicate code
         #     def test_get_differentials(self):
