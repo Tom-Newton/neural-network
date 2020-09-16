@@ -12,7 +12,7 @@ class Network:
     def get_derivatives(self):
         derivatives = []
         for layer in self.data:
-            derivatives.append([lambda y: 0]*len(layer))
+            derivatives.append([lambda Y: 0]*len(layer))
 
         # stem is a function of Y
         # derivatives are functions of Y the X_tilde s and the w s. X_tilde s
@@ -133,12 +133,6 @@ class Network:
                 else:
                     beta = cp.concatenate((beta, neuron.w), axis=0)
         return beta
-
-class Convolutional(Network):
-    def __init__(self, network_data, input_shape, network_input_shape):
-        self.input_shape = input_shape
-        self.network_input_shape = network_input_shape
-        super().__init__(network_data)
 
 
 def log_prior_beta(beta, sigma0_squared):

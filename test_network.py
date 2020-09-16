@@ -43,7 +43,7 @@ class NetworkTests(unittest.TestCase):
             for test_j in range(len(layer)):
                 analytical = derivatives[test_i][test_j](self.Y)
                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
-                    if test_i == 0:
+                    if type(self.network.data[test_i][test_j]) == Softmax:
                         for l in range(self.network.data[0][0].number_classes):
                             self.network.data[0][0].W[k][l] -= dw
                             output1 = self.network.update_network(self.X)[0]
@@ -169,9 +169,9 @@ class ConvolutionalTests(unittest.TestCase):
 
 class ConvolutionalNetworkTests(unittest.TestCase):
     def setUp(self):
-        self.network = Network([[SingleNeuron(input_locations=[(1, 0)])],
-                                [Convolutional(input_location=(2, 0), filter_shape=(1, 2))],
-                                [Convolutional(input_location=0, filter_shape=(2, 2))]])
+        self.network = Network([[Softmax(2, [(1, 0)])],
+                                # [Convolutional(input_location=(2, 0), filter_shape=(1, 2))],
+                                [Convolutional(input_location=0, filter_shape=(2, 3))]])
 
         self.w_data = [
             [cp.array([1, 3, 0])],
@@ -188,85 +188,84 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                  [2, 6, 4]], ]
         ])
 
-        self.Y = cp.array([0,
-                           1])
+        self.Y = cp.array([[0, 1],
+                           [1, 0]])
 
-    def test_get_inputs(self):
-        inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
-        cp.testing.assert_array_equal(inputs, [cp.array([
-            [[1, 2, 3],
-             [4, 5, 6]],
+    # def test_get_inputs(self):
+    #     inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
+    #     cp.testing.assert_array_equal(inputs, [cp.array([
+    #         [[1, 2, 3],
+    #          [4, 5, 6]],
 
-            [[3, 1, 2],
-             [2, 6, 4]],
-        ])])
-        self.network.data[2][0].output = cp.array([[[1, 2]],
-                                                   [[3, 1]], ])
-        inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
-        cp.testing.assert_array_equal(inputs, [cp.array([
-            [[1, 2]],
-            [[3, 1]],
-        ])])
+    #         [[3, 1, 2],
+    #          [2, 6, 4]],
+    #     ])])
+    #     self.network.data[2][0].output = cp.array([[[1, 2]],
+    #                                                [[3, 1]], ])
+    #     inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
+    #     cp.testing.assert_array_equal(inputs, [cp.array([
+    #         [[1, 2]],
+    #         [[3, 1]],
+    #     ])])
 
-    def test_update_X_tilde(self):
-        neuron = self.network.data[2][0]
-        input_ = neuron._get_inputs(self.network, self.X)[0]
-        neuron._update_X_tilde(input_, a=0, b=0)
-        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
-                                                                [1, 3, 1, 2, 6]]))
-        neuron._update_X_tilde(input_, a=0, b=1)
-        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 2, 3, 5, 6],
-                                                                [1, 1, 2, 6, 4]]))
+    # def test_update_X_tilde(self):
+    #     neuron = self.network.data[2][0]
+    #     input_ = neuron._get_inputs(self.network, self.X)[0]
+    #     neuron._update_X_tilde(input_, a=0, b=0)
+    #     cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
+    #                                                             [1, 3, 1, 2, 6]]))
+    #     neuron._update_X_tilde(input_, a=0, b=1)
+    #     cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 2, 3, 5, 6],
+    #                                                             [1, 1, 2, 6, 4]]))
 
-    def test_update_output(self):
-        neuron = self.network.data[2][0]
-        neuron.update_output(self.network, self.X)
-        cp.testing.assert_array_equal(neuron.output[:, 0, 1], predict(neuron.X_tilde, neuron.w)[0])
-        self.assertEqual(neuron.output.shape, (2, 1, 2))
+    # def test_update_output(self):
+    #     neuron = self.network.data[2][0]
+    #     neuron.update_output(self.network, self.X)
+    #     cp.testing.assert_array_equal(neuron.output[:, 0, 1], predict(neuron.X_tilde, neuron.w)[0])
+    #     self.assertEqual(neuron.output.shape, (2, 1, 2))
 
-    def test_output(self):
+    # def test_output(self):
+    #     self.network.update_network(self.X)
+    #     self.assertEqual(type(self.network.output()[0]), cp.ndarray)
+
+    # def test_reset_weights(self):
+    #     self.network.reset_weights()
+
+    # def test_set_weights(self):
+    #     self.network.set_weights(self.w_data)
+    #     for w_layer, layer in zip(self.w_data, self.network.data):
+    #         for w, neuron in zip(w_layer, layer):
+    #             self.assertListEqual(list(w), list(neuron.w))
+
+    def test_get_differentials(self):
+        derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
-        self.assertEqual(type(self.network.output()[0]), cp.ndarray)
 
-    def test_reset_weights(self):
-        self.network.reset_weights()
-
-    def test_set_weights(self):
-        self.network.set_weights(self.w_data)
-        for w_layer, layer in zip(self.w_data, self.network.data):
-            for w, neuron in zip(w_layer, layer):
-                self.assertListEqual(list(w), list(neuron.w))
-
-        #     # TODO: Maybe move this to NetworkTests to reduce duplicate code
-        #     def test_get_differentials(self):
-        #         derivatives = self.network.get_derivatives()
-        #         self.network.update_network(self.X)
-
-        #         # Calculate derivative numerically using taylor series
-        #         dw = 1E-6
-        #         for test_i, layer in enumerate(self.network.data):
-        #             for test_j in range(len(layer)):
-        #                 analytical = derivatives[test_i][test_j](self.Y)
-        #                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
-        #                     if test_i == 0:
-        #                         for l in range(self.network.data[0][0].number_classes):
-        #                             self.network.data[0][0].W[k][l] -= dw
-        #                             output1 = self.network.update_network(self.X)[0]
-        #                             self.network.data[0][0].W[k][l] += 2*dw
-        #                             output2 = self.network.update_network(self.X)[0]
-        #                             numerical = (log_likelihood(
-        #                                 self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-        #                             self.assertAlmostEqual(
-        #                                 cp.asnumpy(numerical), cp.asnumpy(analytical[k][l]), 5)
-        #                     else:
-        #                         self.network.data[test_i][test_j].w[k] -= dw
-        #                         output1 = self.network.update_network(self.X)[0]
-        #                         self.network.data[test_i][test_j].w[k] += 2*dw
-        #                         output2 = self.network.update_network(self.X)[0]
-        #                         numerical = (log_likelihood(
-        #                             self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
-        #                         self.assertAlmostEqual(cp.asnumpy(
-        #                             numerical), cp.asnumpy(analytical[k]), 5)
+        # Calculate derivative numerically using taylor series
+        dw = 1E-6
+        for test_i, layer in enumerate(self.network.data):
+            for test_j in range(len(layer)):
+                analytical = derivatives[test_i][test_j](self.Y)
+                for k in range(self.network.data[test_i][test_j].w.shape[0]):
+                    if type(self.network.data[test_i][test_j]) == Softmax:
+                        for l in range(self.network.data[0][0].number_classes):
+                            self.network.data[0][0].W[k][l] -= dw
+                            output1 = self.network.update_network(self.X)[0]
+                            self.network.data[0][0].W[k][l] += 2*dw
+                            output2 = self.network.update_network(self.X)[0]
+                            numerical = (log_likelihood(
+                                self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+                            self.assertAlmostEqual(
+                                cp.asnumpy(numerical), cp.asnumpy(analytical[k][l]), 5)
+                    else:
+                        self.network.data[test_i][test_j].w[k] -= dw
+                        output1 = self.network.update_network(self.X)[0]
+                        self.network.data[test_i][test_j].w[k] += 2*dw
+                        output2 = self.network.update_network(self.X)[0]
+                        numerical = (log_likelihood(
+                            self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+                        self.assertAlmostEqual(cp.asnumpy(
+                            numerical), cp.asnumpy(analytical[k]), 5)
 
 
 if __name__ == '__main__':

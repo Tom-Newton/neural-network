@@ -61,8 +61,9 @@ class SingleNeuron:
 
     def get_new_stem(self, network_data, input_location, stem):
         def new_stem(Y, input_location=input_location):
-            output = network_data[input_location[0]][input_location[1]].output
-            return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
+            # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
+            input_ = self._get_input(input_location, network_data, None)[:, 0]
+            return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
         return new_stem
 
 
@@ -92,8 +93,9 @@ class Softmax(SingleNeuron):
 
     def get_new_stem(self, network_data, input_location, _):
         def new_stem(Y):
-            output = network_data[input_location[0]][input_location[1]].output
-            return (cp.dot(Y, self.W.T)[:, input_location[1] + 1] - cp.sum(network_data[0][0].output*self.W[input_location[1] + 1, :], axis=1))*output*(1 - output)
+            # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
+            input_ = self._get_input(input_location, network_data, None)[:, 0]
+            return (cp.dot(Y, self.W.T)[:, input_location[1] + 1] - cp.sum(network_data[0][0].output*self.W[input_location[1] + 1, :], axis=1))*input_*(1 - input_)
         return new_stem
 
 
@@ -103,7 +105,6 @@ class Convolutional(SingleNeuron):
         self.input_location = input_location
         super().__init__(input_locations=[input_location])
         self.filter_shape = filter_shape
-        # TODO: Can I get input shape by reading the input
         self.input_shape = None
         self.output_shape = None
         # 1D stack of 2D weight matrix. Stored 1D so they can be easily used in SingleNeuron
@@ -157,12 +158,15 @@ class Convolutional(SingleNeuron):
     def reset_weights(self):
         self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
 
-    # def get_new_stem(self, network_data, input_location, stem):
-    #     def new_stem(Y, input_location=input_location):
-    #         # TODO: Can this be shifted back a level so we can get output from self.output
-    #         output = network_data[input_location[0]][input_location[1]].output
-    #         return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
-    #     return new_stem
+    def get_new_stem(self, network_data, input_location, stem):
+        print('used convolutional stem')
+
+        def new_stem(Y, input_location=input_location):
+            print('used convolutional new_stem')
+            output = network_data[input_location[0]
+                                  ][input_location[1]].output[:, 0, 0]
+            return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
+        return new_stem
 
 # TODO: Add a pooling/subsampling neuron
 
