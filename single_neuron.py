@@ -14,7 +14,7 @@ class SingleNeuron:
         self.output = None
         self.x = None
 
-    def get_inputs(self, network_data, X):
+    def _get_inputs(self, network_data, X):
         inputs = []
         for input_location in self.input_locations:
             try:
@@ -29,13 +29,14 @@ class SingleNeuron:
                                  f'found from neuron {find_neuron_location(self, network_data)}')
         return inputs
 
-    def update_X_tilde(self, network_data, X):
-        inputs = self.get_inputs(network_data, X)
+    def _update_X_tilde(self, network_data, X):
+        # TODO: Catch 2D inputs. Maybe be catch in _get_inputs()
+        inputs = self._get_inputs(network_data, X)
         inputs.insert(0, cp.ones(inputs[0].shape))
         self.X_tilde = cp.concatenate(inputs, 1)
 
     def update_output(self, network_data, X):
-        self.update_X_tilde(network_data, X)
+        self._update_X_tilde(network_data, X)
         prediction = predict(self.X_tilde, self.w)
         self.output = prediction[0]
         self.x = prediction[1]
@@ -66,7 +67,7 @@ class Softmax(SingleNeuron):
             len(self.input_locations) + 1, self.number_classes)
 
     def update_output(self, network_data, X):
-        self.update_X_tilde(network_data, X)
+        self._update_X_tilde(network_data, X)
         # Will be a vector of probabilities of each class
         prediction = softmax_predict(self.X_tilde, self.W)
         self.output = prediction
@@ -89,16 +90,65 @@ class Softmax(SingleNeuron):
         return new_stem
 
 
-class Convolutional:
-    def __init__(self, input_locations):
-        self.input_locations = input_locations
+class Convolutional(SingleNeuron):
+    def __init__(self, input_location, filter_shape, input_shape):
+        # Only allow a single 2D input.
+        self.input_location = input_location
+        super().__init__(input_locations=[input_location])
+        self.filter_shape = filter_shape
+        # TODO: Can I get input shape by reading the input
+        self.input_shape = input_shape
+        self.output_shape = (
+            input_shape[0] - (filter_shape[0] - 1), input_shape[1] - (filter_shape[1] - 1))
         # 1D stack of 2D weight matrix. Stored 1D so they can be easily used in SingleNeuron
-        self.w = cp.random.randn(self.input_locations.shape[0]*self.input_locations.shape[1] + 1)
-        self.X_tilde = None
-        self.output = None
-        self.x = None
+        self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
+        self.output = cp.full(self.output_shape, cp.nan)
 
-    def get_inputs(self, )
+    def get_W_matrix(self):
+        bias = self.w[0]
+        W = cp.full(self.filter_shape, cp.nan)
+        for row_number, i in enumerate(range(1, len(self.w), self.filter_shape[1])):
+            W[row_number, :] = self.w[i: i + self.filter_shape[1]]
+        return W, bias
+
+    def _map_inputs_for_convolution(self, inputs, a, b):
+        mapped_inputs = []
+        for full_input in inputs[0]:
+            input_section = self._get_input_section(full_input[0], a, b)
+            print(cp.concatenate(
+                [input_row for input_row in input_section], axis=0)[np.newaxis, :])
+            mapped_inputs.append(cp.concatenate(
+                [input_row for input_row in input_section], axis=0)[np.newaxis, :])
+        return mapped_inputs
+
+    def _get_input_section(self, full_input, a, b):
+        # Input section is the rectangle of pixels which the filter is positioned over.
+        # It will have shape self.filter_shape
+        return full_input[a: a + self.filter_shape[0], b: a + self.filter_shape[1]]
+
+    def _update_X_tilde(self, network_data, X, a, b):
+        inputs = self._get_inputs(network_data, X)
+        inputs = self._map_inputs_for_convolution(inputs, a, b)
+        print(inputs)
+        inputs.insert(0, cp.ones(inputs[0].shape))
+        self.X_tilde = cp.concatenate(inputs, 0)
+
+    def update_output(self, network_data, X):
+        for a in range(self.output_shape[0]):
+            for b in range(self.output_shape[1]):
+                self._update_X_tilde(network_data, X, a, b)
+                prediction = predict(self.X_tilde, self.w)
+                self.output[a, b] = prediction[0]
+
+    def reset_weights(self):
+        self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
+
+    # def get_new_stem(self, network_data, input_location, stem):
+    #     def new_stem(Y, input_location=input_location):
+    #         # TODO: Can this be shifted back a level so we can get output from self.output
+    #         output = network_data[input_location[0]][input_location[1]].output
+    #         return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
+    #     return new_stem
 
 # TODO: Add a pooling/subsampling neuron
 

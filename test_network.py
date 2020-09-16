@@ -3,7 +3,7 @@ import unittest.mock
 import numpy as np
 import cupy as cp
 from network import Network, log_likelihood, calculate_confusion_matrix
-from single_neuron import SingleNeuron, Softmax, predict, logistic, softmax_predict
+from single_neuron import SingleNeuron, Softmax, Convolutional, predict, logistic, softmax_predict
 
 
 class NetworkTests(unittest.TestCase):
@@ -64,14 +64,14 @@ class NetworkTests(unittest.TestCase):
                             numerical), cp.asnumpy(analytical[k]), 5)
 
     def test_get_inputs(self):
-        inputs = self.network.data[2][0].get_inputs(self.network.data, self.X)
+        inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
         self.assertTrue((inputs[0] == cp.array([[1],
                                                 [2]])).all())
         self.assertTrue((inputs[1] == cp.array([[3],
                                                 [4]])).all())
         for index, neuron in enumerate(self.network.data[2]):
             neuron.output = index * cp.array([1, 3])
-        inputs = self.network.data[1][0].get_inputs(self.network.data, self.X)
+        inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
         self.assertTrue((inputs[0] == cp.array([[0],
                                                 [0]])).all())
         self.assertTrue((inputs[1] == cp.array([[1],
@@ -79,7 +79,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_update_X_tilde(self):
         neuron = self.network.data[2][0]
-        neuron.update_X_tilde(self.network, self.X)
+        neuron._update_X_tilde(self.network, self.X)
         self.assertTrue((neuron.X_tilde == cp.array([[1, 1, 3],
                                                      [1, 2, 4]])).all())
 
@@ -146,11 +146,98 @@ class SoftmaxTests(unittest.TestCase):
         self.softmax.X_tilde = self.X_tilde
         self.softmax.W = self.W
 
-        self.softmax.update_X_tilde = unittest.mock.Mock()
+        self.softmax._update_X_tilde = unittest.mock.Mock()
 
     def test_softmax_predict(self):
         self.softmax.update_output(None, None)
         self.assertEqual(self.softmax.output.shape, (3, 2))
+
+
+class ConvolutionalTests(unittest.TestCase):
+    def setUp(self):
+        self.w = cp.array([1, 2, 3, 4, 5, 6, 7])
+        self.convolutional = Convolutional(input_location=0, filter_shape=(2, 3), input_shape=(4, 5))
+        self.convolutional.w = self.w
+
+    def test_get_W_matrix(self):
+        W, bias = self.convolutional.get_W_matrix()
+        self.assertEqual(bias, 1)
+        cp.testing.assert_array_equal(W, cp.array([[2, 3, 4],
+                                                   [5, 6, 7]]))
+
+
+class ConvolutionalNetworkTests(unittest.TestCase):
+    def setUp(self):
+        self.network = Network([[SingleNeuron(input_locations=[(1, 0)])],
+                                [Convolutional(input_location=(
+                                    2, 0), filter_shape=(2, 2), input_shape=(1, 2))],
+                                [Convolutional(input_location=0, filter_shape=(2, 2), input_shape=(2, 3))]])
+
+        self.X = cp.array([
+            [
+                [[1, 2, 3],
+                 [4, 5, 6]], ],
+            [
+                [[3, 1, 2],
+                 [2, 6, 4]], ]
+        ])
+
+        self.Y = cp.array([0,
+                           1])
+
+    def test_get_inputs(self):
+        inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
+        cp.testing.assert_array_equal(inputs, [self.X])
+        self.network.data[2][0].output = cp.array([[[1, 2]],
+                                                   [[3, 1]], ])
+        inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
+        cp.testing.assert_array_equal(inputs, [cp.array([
+            [
+                [[1, 2]], ],
+            [
+                [[3, 1]], ]
+        ])])
+
+    def test_update_X_tilde(self):
+        neuron = self.network.data[2][0]
+        a = 0
+        b = 0
+        # TODO: iterate checking this function for all a and b
+        neuron._update_X_tilde(self.network, self.X, a, b)
+        print(neuron.X_tilde)
+        # self.assertTrue((neuron.X_tilde == cp.array([[1, 1, 3],
+        #                                              [1, 2, 4]])).all())
+
+        #     # TODO: Maybe move this to NetworkTests to reduce duplicate code
+        #     def test_get_differentials(self):
+        #         derivatives = self.network.get_derivatives()
+        #         self.network.update_network(self.X)
+
+        #         # Calculate derivative numerically using taylor series
+        #         dw = 1E-6
+        #         for test_i, layer in enumerate(self.network.data):
+        #             for test_j in range(len(layer)):
+        #                 analytical = derivatives[test_i][test_j](self.Y)
+        #                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
+        #                     if test_i == 0:
+        #                         for l in range(self.network.data[0][0].number_classes):
+        #                             self.network.data[0][0].W[k][l] -= dw
+        #                             output1 = self.network.update_network(self.X)[0]
+        #                             self.network.data[0][0].W[k][l] += 2*dw
+        #                             output2 = self.network.update_network(self.X)[0]
+        #                             numerical = (log_likelihood(
+        #                                 self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+        #                             self.assertAlmostEqual(
+        #                                 cp.asnumpy(numerical), cp.asnumpy(analytical[k][l]), 5)
+        #                     else:
+        #                         self.network.data[test_i][test_j].w[k] -= dw
+        #                         output1 = self.network.update_network(self.X)[0]
+        #                         self.network.data[test_i][test_j].w[k] += 2*dw
+        #                         output2 = self.network.update_network(self.X)[0]
+        #                         numerical = (log_likelihood(
+        #                             self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
+        #                         self.assertAlmostEqual(cp.asnumpy(
+        #                             numerical), cp.asnumpy(analytical[k]), 5)
 
 
 if __name__ == '__main__':
