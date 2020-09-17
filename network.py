@@ -19,7 +19,7 @@ class Network:
         # and w s are stored in the neuron objects. This makes the derivatives
         # functions of only Y.
 
-        def differentiate(stem=lambda Y: (Y - self.data[0][0].output), i=0, j=0, a=None, b=None):
+        def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=None, b=None):
             neuron = self.data[i][j]
             derivatives[i][j] = neuron.get_new_derivative(
                 derivatives[i][j], stem, a, b)
@@ -54,11 +54,11 @@ class Network:
             # Iterates layers in reverse order
             for neuron in layer:
                 neuron.update_output(self.data, X)
-        return self.data[0][0].output, self.data[0][0].x
+        return self.data[0][0].get_output(), self.data[0][0].x
 
-    def output(self):
+    def get_output(self):
         # Assumes the network has been updated
-        return self.data[0][0].output, self.data[0][0].x
+        return self.data[0][0].get_output(), self.data[0][0].x
 
     def reset_weights(self):
         for layer in self.data:
