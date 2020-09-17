@@ -22,6 +22,7 @@ class SingleNeuron:
                                   ][input_location[1]].output[:, np.newaxis]
         else:
             input_ = X[:, input_location][:, np.newaxis]
+        # TODO: This should probably be done at the output from the convolutional neuron
         if len(input_.shape) > 2:
             if (input_.shape[1], input_.shape[2]) == (1, 1):
                 return input_[:, 0, 0]
@@ -59,10 +60,25 @@ class SingleNeuron:
     def get_weights(self):
         return self.w
 
-    def get_new_stem(self, network_data, input_location, stem):
-        def new_stem(Y, input_location=input_location):
-            # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
-            input_ = self._get_input(input_location, network_data, None)[:, 0]
+    def get_new_derivative(self, derivative, stem, a, b):
+
+        def new_derivative(Y):
+            if a is None and b is None:
+                X_tilde = self.X_tilde
+            else:
+                X_tilde = self.X_tilde[:, :, a, b]
+            return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
+        return new_derivative
+
+    def get_new_stem(self, network_data, input_location, stem, a, b):
+        def new_stem(Y):
+            if a is None and b is None:
+                # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
+                input_ = self._get_input(
+                    input_location, network_data, None)[:, 0]
+            else:
+                input_ = self._get_input(
+                    input_location, network_data, None)[:, a, b]
             return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
         return new_stem
 
@@ -91,7 +107,7 @@ class Softmax(SingleNeuron):
     def get_weights(self):
         return self.W
 
-    def get_new_stem(self, network_data, input_location, _):
+    def get_new_stem(self, network_data, input_location, stem, a, b):
         def new_stem(Y):
             # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
             input_ = self._get_input(input_location, network_data, None)[:, 0]
@@ -158,17 +174,14 @@ class Convolutional(SingleNeuron):
     def reset_weights(self):
         self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
 
-    def get_new_stem(self, network_data, input_location, stem):
-        print('used convolutional stem')
+    # def get_new_stem(self, network_data, input_location, stem):
+    #     print('used convolutional stem')
 
-        def new_stem(Y, input_location=input_location):
-            print('used convolutional new_stem')
-            output = network_data[input_location[0]
-                                  ][input_location[1]].output[:, 0, 0]
-            return stem(Y)*self.w[input_location[1] + 1]*output*(1 - output)
-        return new_stem
-
-# TODO: Add a pooling/subsampling neuron
+    #     def new_stem(Y, input_location=input_location):
+    #         print('used convolutional new_stem')
+    #         input_ = self._get_input(input_location, network_data, None)
+    #         return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
+    #     return new_stem
 
 
 # TODO: Fix the occasional numerical error

@@ -1,7 +1,7 @@
 import numpy as np
 import cupy as cp
 import scipy.optimize
-from single_neuron import Softmax
+from single_neuron import Softmax, Convolutional
 
 
 class Network:
@@ -19,18 +19,33 @@ class Network:
         # and w s are stored in the neuron objects. This makes the derivatives
         # functions of only Y.
 
-        def differentiate(stem=lambda Y: (Y - self.data[0][0].output), i=0, j=0):
-
-            # TODO: Put the new_derivative and new_stem functions in the corresponding neuron to get the right type
-            def new_derivative(Y, derivative=derivatives[i][j], stem=stem):
-                return derivative(Y) + cp.dot(self.data[i][j].X_tilde.T, stem(Y))
-            derivatives[i][j] = new_derivative
+        def differentiate(stem=lambda Y: (Y - self.data[0][0].output), i=0, j=0, a=None, b=None):
+            neuron = self.data[i][j]
+            derivatives[i][j] = neuron.get_new_derivative(
+                derivatives[i][j], stem, a, b)
 
             for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    neuron = self.data[i][j]
-                    differentiate(
-                        neuron.get_new_stem(self.data, input_location, stem), input_location[0], input_location[1])
+                    new_neuron = self.data[input_location[0]
+                                           ][input_location[1]]
+                    if type(new_neuron) == Convolutional:
+                        for a in range(new_neuron.output_shape[1]):
+                            for b in range(new_neuron.output_shape[2]):
+                                differentiate(
+                                    neuron.get_new_stem(
+                                        self.data, input_location, stem, a, b),
+                                    input_location[0],
+                                    input_location[1],
+                                    a,
+                                    b,)
+                    else:
+                        differentiate(
+                            neuron.get_new_stem(
+                                self.data, input_location, stem, a, b),
+                            input_location[0],
+                            input_location[1],
+                            a,
+                            b,)
         differentiate()
         return derivatives
 

@@ -170,8 +170,8 @@ class ConvolutionalTests(unittest.TestCase):
 class ConvolutionalNetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = Network([[Softmax(2, [(1, 0)])],
-                                # [Convolutional(input_location=(2, 0), filter_shape=(1, 2))],
-                                [Convolutional(input_location=0, filter_shape=(2, 3))]])
+                                [Convolutional(input_location=(2, 0), filter_shape=(1, 2))],
+                                [Convolutional(input_location=0, filter_shape=(2, 2))]])
 
         self.w_data = [
             [cp.array([1, 3, 0])],
@@ -191,51 +191,51 @@ class ConvolutionalNetworkTests(unittest.TestCase):
         self.Y = cp.array([[0, 1],
                            [1, 0]])
 
-    # def test_get_inputs(self):
-    #     inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
-    #     cp.testing.assert_array_equal(inputs, [cp.array([
-    #         [[1, 2, 3],
-    #          [4, 5, 6]],
+    def test_get_inputs(self):
+        inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
+        cp.testing.assert_array_equal(inputs, [cp.array([
+            [[1, 2, 3],
+             [4, 5, 6]],
 
-    #         [[3, 1, 2],
-    #          [2, 6, 4]],
-    #     ])])
-    #     self.network.data[2][0].output = cp.array([[[1, 2]],
-    #                                                [[3, 1]], ])
-    #     inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
-    #     cp.testing.assert_array_equal(inputs, [cp.array([
-    #         [[1, 2]],
-    #         [[3, 1]],
-    #     ])])
+            [[3, 1, 2],
+             [2, 6, 4]],
+        ])])
+        self.network.data[2][0].output = cp.array([[[1, 2]],
+                                                   [[3, 1]], ])
+        inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
+        cp.testing.assert_array_equal(inputs, [cp.array([
+            [[1, 2]],
+            [[3, 1]],
+        ])])
 
-    # def test_update_X_tilde(self):
-    #     neuron = self.network.data[2][0]
-    #     input_ = neuron._get_inputs(self.network, self.X)[0]
-    #     neuron._update_X_tilde(input_, a=0, b=0)
-    #     cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
-    #                                                             [1, 3, 1, 2, 6]]))
-    #     neuron._update_X_tilde(input_, a=0, b=1)
-    #     cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 2, 3, 5, 6],
-    #                                                             [1, 1, 2, 6, 4]]))
+    def test_update_X_tilde(self):
+        neuron = self.network.data[2][0]
+        input_ = neuron._get_inputs(self.network, self.X)[0]
+        neuron._update_X_tilde(input_, a=0, b=0)
+        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 1, 2, 4, 5],
+                                                                [1, 3, 1, 2, 6]]))
+        neuron._update_X_tilde(input_, a=0, b=1)
+        cp.testing.assert_array_equal(neuron.X_tilde, cp.array([[1, 2, 3, 5, 6],
+                                                                [1, 1, 2, 6, 4]]))
 
-    # def test_update_output(self):
-    #     neuron = self.network.data[2][0]
-    #     neuron.update_output(self.network, self.X)
-    #     cp.testing.assert_array_equal(neuron.output[:, 0, 1], predict(neuron.X_tilde, neuron.w)[0])
-    #     self.assertEqual(neuron.output.shape, (2, 1, 2))
+    def test_update_output(self):
+        neuron = self.network.data[2][0]
+        neuron.update_output(self.network, self.X)
+        cp.testing.assert_array_equal(neuron.output[:, 0, 1], predict(neuron.X_tilde, neuron.w)[0])
+        self.assertEqual(neuron.output.shape, (2, 1, 2))
 
-    # def test_output(self):
-    #     self.network.update_network(self.X)
-    #     self.assertEqual(type(self.network.output()[0]), cp.ndarray)
+    def test_output(self):
+        self.network.update_network(self.X)
+        self.assertEqual(type(self.network.output()[0]), cp.ndarray)
 
-    # def test_reset_weights(self):
-    #     self.network.reset_weights()
+    def test_reset_weights(self):
+        self.network.reset_weights()
 
-    # def test_set_weights(self):
-    #     self.network.set_weights(self.w_data)
-    #     for w_layer, layer in zip(self.w_data, self.network.data):
-    #         for w, neuron in zip(w_layer, layer):
-    #             self.assertListEqual(list(w), list(neuron.w))
+    def test_set_weights(self):
+        self.network.set_weights(self.w_data)
+        for w_layer, layer in zip(self.w_data, self.network.data):
+            for w, neuron in zip(w_layer, layer):
+                self.assertListEqual(list(w), list(neuron.w))
 
     def test_get_differentials(self):
         derivatives = self.network.get_derivatives()
