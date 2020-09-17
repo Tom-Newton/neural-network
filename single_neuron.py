@@ -146,6 +146,11 @@ class Convolutional(SingleNeuron):
             input_ = network_data[input_location[0]][input_location[1]].get_output()
         else:
             input_ = X[:, input_location, :, :]
+        if self.input_shape is None:
+            self._set_input_dimensions(input_, input_location)
+        return input_
+
+    def _set_input_dimensions(self, input_, input_location):
         self.input_shape = input_.shape
         if len(self.input_shape) < 3:
             raise ValueError('Convolutional given scalars an input. 2D arrays were expected. '
@@ -163,7 +168,6 @@ class Convolutional(SingleNeuron):
                                       len(self.w),
                                       self.output_shape[1],
                                       self.output_shape[2]), cp.nan)
-        return input_
 
     def _map_inputs_for_convolution(self, input_section):
         return cp.concatenate([cp.array([1])] + [input_row for input_row in input_section], axis=0)
