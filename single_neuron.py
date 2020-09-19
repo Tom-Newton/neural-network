@@ -201,7 +201,6 @@ class Convolutional(SingleNeuron):
 
     def get_new_stem(self, network_data, input_location, stem, a, b):
         def new_stem(Y, input_location=input_location):
-            print('used convolutional new_stem')
             input_ = self._get_input(
                 input_location, network_data, None)[:, a, b]
             return stem(Y)*self.w[self._map_ab_to_l(a, b)]*input_*(1 - input_)
