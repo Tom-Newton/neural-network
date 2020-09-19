@@ -19,18 +19,16 @@ class Network:
         # and w s are stored in the neuron objects. This makes the derivatives
         # functions of only Y.
 
-        def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=None, b=None):
+        def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=0, b=0):
             neuron = self.data[i][j]
             derivatives[i][j] = neuron.get_new_derivative(
                 derivatives[i][j], stem, a, b)
 
             for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    new_neuron = self.data[input_location[0]
-                                           ][input_location[1]]
-                    if type(new_neuron) == Convolutional:
-                        for a in range(new_neuron.output_shape[1]):
-                            for b in range(new_neuron.output_shape[2]):
+                    if type(neuron) == Convolutional:
+                        for a in range(a + neuron.filter_shape[0]):
+                            for b in range(b + neuron.filter_shape[1]):
                                 differentiate(
                                     neuron.get_new_stem(
                                         self.data, input_location, stem, a, b),
@@ -44,8 +42,8 @@ class Network:
                                 self.data, input_location, stem, a, b),
                             input_location[0],
                             input_location[1],
-                            a,
-                            b,)
+                            a=0,
+                            b=0,)
         differentiate()
         return derivatives
 
