@@ -29,19 +29,21 @@ class Network:
                 if type(input_location) == tuple:
                     print(type(neuron))
                     if type(neuron) == Convolutional:
+                        l = 1 
                         for new_a in range(a, a + neuron.filter_shape[0]):
                             for new_b in range(b, b + neuron.filter_shape[1]):
                                 differentiate(
                                     neuron.get_new_stem(
-                                        self.data, input_location, stem, new_a, new_b),
+                                        self.data, input_location, stem, new_a, new_b, l),
                                     input_location[0],
                                     input_location[1],
                                     new_a,
                                     new_b)
+                                l += 1
                     else:
                         differentiate(
                             neuron.get_new_stem(
-                                self.data, input_location, stem, a, b),
+                                self.data, input_location, stem, a=0, b=0),
                             input_location[0],
                             input_location[1],
                             a=0,

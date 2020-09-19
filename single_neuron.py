@@ -8,6 +8,7 @@ import cupy as cp
 
 class SingleNeuron:
     def __init__(self, input_locations):
+        # TODO: Make attributes with get functions private 
         self.input_locations = input_locations
         self.w = cp.random.randn(len(self.input_locations) + 1)
         self.X_tilde = None
@@ -162,8 +163,9 @@ class Convolutional(SingleNeuron):
                                       self.output_shape[1],
                                       self.output_shape[2]), cp.nan)
 
-    def _map_ab_to_l(self, a, b):
-        return a * self.output_shape[2] + b + 1
+    # TODO: Maybe re-introduce this as a method for finding l
+    # def _map_ab_to_l(self, a, b):
+    #     return a * self.output_shape[2] + b + 1
 
     def _map_inputs_for_convolution(self, input_section):
         return cp.concatenate([cp.array([1])] + [input_row for input_row in input_section], axis=0)
@@ -199,11 +201,11 @@ class Convolutional(SingleNeuron):
             return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
         return new_derivative
 
-    def get_new_stem(self, network_data, input_location, stem, a, b):
+    def get_new_stem(self, network_data, input_location, stem, a, b, l):
         def new_stem(Y, input_location=input_location):
             input_ = self._get_input(
                 input_location, network_data, None)[:, a, b]
-            return stem(Y)*self.w[self._map_ab_to_l(a, b)]*input_*(1 - input_)
+            return stem(Y)*self.w[l]*input_*(1 - input_)
         return new_stem
 
 
