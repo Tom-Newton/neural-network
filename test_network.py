@@ -305,6 +305,9 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                             self.Y, output2) - log_likelihood(self.Y, output1))/(2*dw)
                         self.assertAlmostEqual(cp.asnumpy(
                             numerical), cp.asnumpy(analytical[k]), 5)
+    
+    def test_train(self):
+        self.network.train(self.X, self.Y, 1, 20)
 
 
 if __name__ == '__main__':
