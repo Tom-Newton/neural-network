@@ -67,24 +67,16 @@ class SingleNeuron:
         return self.w
 
     def get_new_derivative(self, derivative, stem, a, b):
-
         def new_derivative(Y):
-            if a is None and b is None:
-                X_tilde = self.get_X_tilde()
-            else:
-                X_tilde = self.get_X_tilde(a, b)
+            X_tilde = self.get_X_tilde()
             return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
         return new_derivative
 
     def get_new_stem(self, network_data, input_location, stem, a, b):
         def new_stem(Y):
-            if a is None and b is None:
-                # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
-                input_ = self._get_input(
-                    input_location, network_data, None)[:, 0]
-            else:
-                input_ = self._get_input(
-                    input_location, network_data, None)[:, a, b]
+            # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
+            input_ = self._get_input(
+                input_location, network_data, None)[:, 0]
             return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
         return new_stem
 
@@ -143,7 +135,8 @@ class Convolutional(SingleNeuron):
 
     def _get_input(self, input_location, network_data, X):
         if type(input_location) == tuple:
-            input_ = network_data[input_location[0]][input_location[1]].get_output()
+            input_ = network_data[input_location[0]
+                                  ][input_location[1]].get_output()
         else:
             input_ = X[:, input_location, :, :]
         if self.input_shape is None:
@@ -197,14 +190,19 @@ class Convolutional(SingleNeuron):
     def reset_weights(self):
         self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
 
-    # def get_new_stem(self, network_data, input_location, stem):
-    #     print('used convolutional stem')
+    def get_new_derivative(self, derivative, stem, a, b):
+        def new_derivative(Y):
+            X_tilde = self.get_X_tilde(a, b)
+            return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
+        return new_derivative
 
-    #     def new_stem(Y, input_location=input_location):
-    #         print('used convolutional new_stem')
-    #         input_ = self._get_input(input_location, network_data, None)
-    #         return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
-    #     return new_stem
+    def get_new_stem(self, network_data, input_location, stem, a, b):
+        def new_stem(Y, input_location=input_location):
+            print('used convolutional new_stem')
+            input_ = self._get_input(
+                input_location, network_data, None)[:, a, b]
+            return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
+        return new_stem
 
 
 # TODO: Fix the occasional numerical error
