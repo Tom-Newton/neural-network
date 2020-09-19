@@ -284,7 +284,6 @@ class ConvolutionalNetworkTests(unittest.TestCase):
         dw = 1E-6
         for test_i, layer in enumerate(self.network.data):
             for test_j in range(len(layer)):
-                print(f'i={test_i} j={test_j}')
                 analytical = derivatives[test_i][test_j](self.Y)
                 for k in range(self.network.data[test_i][test_j].w.shape[0]):
                     if type(self.network.data[test_i][test_j]) == Softmax:

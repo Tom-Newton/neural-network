@@ -20,14 +20,12 @@ class Network:
         # functions of only Y.
 
         def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=0, b=0):
-            print(f'i={i} j={j} a={a} b={b}')
             neuron = self.data[i][j]
             derivatives[i][j] = neuron.get_new_derivative(
                 derivatives[i][j], stem, a, b)
 
             for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    print(type(neuron))
                     if type(neuron) == Convolutional:
                         l = 1 
                         for new_a in range(a, a + neuron.filter_shape[0]):
