@@ -169,13 +169,23 @@ class ConvolutionalTests(unittest.TestCase):
 
 class ConvolutionalNetworkTests(unittest.TestCase):
     def setUp(self):
-        self.network = Network([[Softmax(2, [(1, 0)])],
-                                [Convolutional(input_location=(
-                                    2, 0), filter_shape=(1, 2))],
-                                [Convolutional(input_location=(
-                                    3, 0), filter_shape=(2, 2))],
-                                [Convolutional(input_location=(
-                                    4, 0), filter_shape=(2, 2))],
+        self.network = Network([[Softmax(number_classes=2, input_locations=[(1, 0), (1, 1), (1, 2)])],
+                                [SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)]),
+                                 SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)]),
+                                 SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)])],
+                                [Convolutional(input_location=(3, 0), filter_shape=(1, 2)),
+                                 Convolutional(input_location=(3, 1), filter_shape=(1, 2)),
+                                 Convolutional(input_location=(3, 2), filter_shape=(1, 2)),
+                                 Convolutional(input_location=(3, 3), filter_shape=(1, 2)),
+                                 Convolutional(input_location=(3, 4), filter_shape=(1, 2))],
+                                [Convolutional(input_location=(4, 0), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(4, 1), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(4, 2), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(4, 1), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(4, 2), filter_shape=(2, 2))],
+                                [Convolutional(input_location=(5, 0), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(5, 0), filter_shape=(2, 2)),
+                                 Convolutional(input_location=(5, 0), filter_shape=(2, 2))],
                                 [Convolutional(input_location=0, filter_shape=(3, 2))]])
 
         self.w_data = [
@@ -204,7 +214,7 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                            [1, 0]])
 
     def test_get_inputs(self):
-        inputs = self.network.data[4][0]._get_inputs(self.network.data, self.X)
+        inputs = self.network.data[5][0]._get_inputs(self.network.data, self.X)
         cp.testing.assert_array_equal(inputs, [cp.array([
             [[1, 2, 3, 4, 2],
              [4, 5, 6, 5, 7],
@@ -218,16 +228,16 @@ class ConvolutionalNetworkTests(unittest.TestCase):
              [3, 7, 1, 9, 9],
              [3, 7, 1, 9, 9]],
         ])])
-        self.network.data[2][0].output_array = cp.array([[[1, 2]],
+        self.network.data[3][0].output_array = cp.array([[[1, 2]],
                                                          [[3, 1]], ])
-        inputs = self.network.data[1][0]._get_inputs(self.network.data, self.X)
+        inputs = self.network.data[2][0]._get_inputs(self.network.data, self.X)
         cp.testing.assert_array_equal(inputs, [cp.array([
             [[1, 2]],
             [[3, 1]],
         ])])
 
     def test_update_X_tilde(self):
-        neuron = self.network.data[4][0]
+        neuron = self.network.data[5][0]
         neuron._update_X_tilde(self.network, self.X)
         cp.testing.assert_array_equal(neuron.get_X_tilde(a=0, b=0), cp.array([[1, 1, 2, 4, 5, 3, 2],
                                                                               [1, 3, 1, 2, 6, 3, 7]]))
@@ -235,7 +245,7 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                                                                               [1, 1, 2, 6, 4, 7, 1]]))
 
     def test_update_output(self):
-        neuron = self.network.data[4][0]
+        neuron = self.network.data[5][0]
         neuron.update_output(self.network, self.X)
         cp.testing.assert_array_equal(
             neuron.get_output(a=0, b=0), predict(neuron.get_X_tilde(a=0, b=0), neuron.w)[0])
