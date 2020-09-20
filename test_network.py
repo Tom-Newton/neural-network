@@ -269,12 +269,6 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                 else:
                     self.assertListEqual(list(w), list(neuron.w))
 
-    # def test_map_ab_to_l(self):
-    #     self.network.update_network(self.X)
-    #     neuron = self.network.data[3][0]
-    #     self.assertEqual(neuron._map_ab_to_l(a=0, b=0), 1)
-    #     self.assertEqual(neuron._map_ab_to_l(a=0, b=1), 2)
-    #     self.assertEqual(neuron._map_ab_to_l(a=1, b=1), 4)
 
     def test_get_differentials(self):
         self.network.update_network(self.X)

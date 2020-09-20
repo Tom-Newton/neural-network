@@ -45,7 +45,7 @@ class Network:
                             input_location[0],
                             input_location[1],
                             a=0,
-                            b=0,)
+                            b=0)
         differentiate()
         return derivatives
 
