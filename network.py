@@ -1,7 +1,7 @@
 import numpy as np
 import cupy as cp
 import scipy.optimize
-from single_neuron import Softmax
+from single_neuron import Softmax, Convolutional
 
 
 class Network:
@@ -12,23 +12,40 @@ class Network:
     def get_derivatives(self):
         derivatives = []
         for layer in self.data:
-            derivatives.append([lambda y: 0]*len(layer))
+            derivatives.append([lambda Y: 0]*len(layer))
 
         # stem is a function of Y
         # derivatives are functions of Y the X_tilde s and the w s. X_tilde s
         # and w s are stored in the neuron objects. This makes the derivatives
         # functions of only Y.
 
-        def differentiate(stem=lambda Y: (Y - self.data[0][0].output), i=0, j=0):
-            def new_derivative(Y, derivative=derivatives[i][j], stem=stem):
-                return derivative(Y) + cp.dot(self.data[i][j].X_tilde.T, stem(Y))
-            derivatives[i][j] = new_derivative
+        def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=0, b=0):
+            neuron = self.data[i][j]
+            derivatives[i][j] = neuron.get_new_derivative(
+                derivatives[i][j], stem, a, b)
 
             for input_location in self.data[i][j].input_locations:
                 if type(input_location) == tuple:
-                    neuron = self.data[i][j]
-                    differentiate(
-                        neuron.get_new_stem(self.data, input_location, stem), input_location[0], input_location[1])
+                    if type(neuron) == Convolutional:
+                        l = 1 
+                        for new_a in range(a, a + neuron.filter_shape[0]):
+                            for new_b in range(b, b + neuron.filter_shape[1]):
+                                differentiate(
+                                    neuron.get_new_stem(
+                                        self.data, input_location, stem, new_a, new_b, l),
+                                    input_location[0],
+                                    input_location[1],
+                                    new_a,
+                                    new_b)
+                                l += 1
+                    else:
+                        differentiate(
+                            neuron.get_new_stem(
+                                self.data, input_location, stem, a=0, b=0),
+                            input_location[0],
+                            input_location[1],
+                            a=0,
+                            b=0)
         differentiate()
         return derivatives
 
@@ -36,13 +53,12 @@ class Network:
         for layer in self.data[::-1]:
             # Iterates layers in reverse order
             for neuron in layer:
-                neuron.update_X_tilde(self.data, X)
-                neuron.update_output()
-        return self.data[0][0].output, self.data[0][0].x
+                neuron.update_output(self.data, X)
+        return self.data[0][0].get_output(), self.data[0][0].x
 
-    def output(self):
+    def get_output(self):
         # Assumes the network has been updated
-        return self.data[0][0].output, self.data[0][0].x
+        return self.data[0][0].get_output(), self.data[0][0].x
 
     def reset_weights(self):
         for layer in self.data:
