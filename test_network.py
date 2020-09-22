@@ -272,7 +272,6 @@ class ConvolutionalNetworkTests(unittest.TestCase):
 
 
     def test_get_differentials(self):
-        self.network.update_network(self.X)
         derivatives = self.network.get_derivatives()
         self.network.update_network(self.X)
 
