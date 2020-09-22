@@ -172,7 +172,7 @@ class ConvolutionalNetworkTests(unittest.TestCase):
         self.network = Network([[Softmax(number_classes=2, input_locations=[(1, 0), (1, 1), (1, 2)])],
                                 [SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]),
                                  SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]),
-                                 SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)])],
+                                 SingleNeuron(input_locations=[(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)])],
                                 [Convolutional(input_location=(3, 0), filter_shape=(1, 2)),
                                  Convolutional(input_location=(3, 1), filter_shape=(1, 2)),
                                  Convolutional(input_location=(3, 2), filter_shape=(1, 2)),
@@ -186,8 +186,9 @@ class ConvolutionalNetworkTests(unittest.TestCase):
                                  Convolutional(input_location=(4, 2), filter_shape=(2, 2))],
                                 [Convolutional(input_location=(5, 0), filter_shape=(2, 2)),
                                  Convolutional(input_location=(5, 0), filter_shape=(2, 2)),
-                                 Convolutional(input_location=(5, 0), filter_shape=(2, 2))],
-                                [Convolutional(input_location=0, filter_shape=(3, 2))]])
+                                 Convolutional(input_location=(5, 1), filter_shape=(2, 2))],
+                                [Convolutional(input_location=0, filter_shape=(3, 2)),
+                                 Convolutional(input_location=0, filter_shape=(3, 2))]])
 
         self.w_data = [
             [cp.array([[1, 3, 0],
