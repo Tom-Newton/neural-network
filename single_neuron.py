@@ -67,10 +67,10 @@ class SingleNeuron:
     def get_weights(self):
         return self.w
 
-    def get_new_derivative(self, derivative, stem, a, b):
+    def get_new_derivative(self, stem, a, b):
         def new_derivative(Y):
             X_tilde = self.get_X_tilde()
-            return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
+            return cp.dot(X_tilde.T, stem(Y))
         return new_derivative
 
     def get_new_stem(self, network_data, input_location, stem, l):
@@ -191,10 +191,10 @@ class Convolutional(SingleNeuron):
     def reset_weights(self):
         self.w = cp.random.randn(1 + self.filter_shape[0]*self.filter_shape[1])
 
-    def get_new_derivative(self, derivative, stem, a, b):
+    def get_new_derivative(self, stem, a, b):
         def new_derivative(Y):
             X_tilde = self.get_X_tilde(a, b)
-            return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
+            return cp.dot(X_tilde.T, stem(Y))
         return new_derivative
 
     def get_new_stem(self, network_data, input_location, stem, a, b, l):

@@ -2,6 +2,7 @@ import numpy as np
 import cupy as cp
 import scipy.optimize
 from single_neuron import Softmax, Convolutional
+from derivative import Derivative
 
 
 class Network:
@@ -12,7 +13,10 @@ class Network:
     def get_derivatives(self):
         derivatives = []
         for layer in self.data:
-            derivatives.append([lambda Y: 0]*len(layer))
+            derivatives_layer = []
+            for _ in layer:
+                derivatives_layer.append(Derivative())
+            derivatives.append(derivatives_layer)
 
         # stem is a function of Y
         # derivatives are functions of Y the X_tilde s and the w s. X_tilde s
@@ -21,8 +25,7 @@ class Network:
 
         def differentiate(stem=lambda Y: (Y - self.data[0][0].get_output()), i=0, j=0, a=0, b=0):
             neuron = self.data[i][j]
-            derivatives[i][j] = neuron.get_new_derivative(
-                derivatives[i][j], stem, a, b)
+            derivatives[i][j] += neuron.get_new_derivative(stem, a, b)
 
             l = 1
             for input_location in self.data[i][j].input_locations:
@@ -48,7 +51,17 @@ class Network:
                             b=0)
                         l += 1
         differentiate()
-        return derivatives
+
+        # Now all of the components for every derivative have been computed we can form the complete derivative which 
+        # is a function that returns the sum of all the derivative components. This method greatly reduces the required 
+        # recursion depth compared to replacing the derivative function every time a new component was computed.
+        completed_derivatives = []
+        for layer in derivatives:
+            completed_derivatives_layer = []
+            for derivative in layer:
+                completed_derivatives_layer.append(derivative.get_complete_derivative())
+            completed_derivatives.append(completed_derivatives_layer)
+        return completed_derivatives
 
     def update_network(self, X):
         for layer in self.data[::-1]:
