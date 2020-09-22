@@ -27,7 +27,7 @@ class NetworkTests(unittest.TestCase):
                            [1, 0]])
 
         self.beta = cp.array(
-            [2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 7, 3, 8, 2, 11, 24, 6])
+            [2, 5, 8, 1, 2, 5, 7, 1, 2, 9, 4, 5, 3, 3, 8, 2, 11, 24, 6])
 
     def test_log_likelihood(self):
         output = self.network.update_network(self.X)[0]
@@ -113,7 +113,7 @@ class NetworkTests(unittest.TestCase):
         self.assertListEqual(
             list(self.network.data[0][0].W[:, 1]), [2, 5, 7, 1])
         self.assertListEqual(list(self.network.data[1][0].w), [2, 9, 4])
-        self.assertListEqual(list(self.network.data[1][1].w), [5, 3, 7])
+        self.assertListEqual(list(self.network.data[1][1].w), [5, 3])
         self.assertListEqual(list(self.network.data[2][0].w), [3, 8, 2])
         self.assertListEqual(list(self.network.data[2][1].w), [11, 24, 6])
 

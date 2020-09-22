@@ -73,12 +73,12 @@ class SingleNeuron:
             return derivative(Y) + cp.dot(X_tilde.T, stem(Y))
         return new_derivative
 
-    def get_new_stem(self, network_data, input_location, stem, a, b):
+    def get_new_stem(self, network_data, input_location, stem, l):
         def new_stem(Y):
             # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
             input_ = self._get_input(
                 input_location, network_data, None)[:, 0]
-            return stem(Y)*self.w[input_location[1] + 1]*input_*(1 - input_)
+            return stem(Y)*self.w[l]*input_*(1 - input_)
         return new_stem
 
 
@@ -106,11 +106,11 @@ class Softmax(SingleNeuron):
     def get_weights(self):
         return self.W
 
-    def get_new_stem(self, network_data, input_location, stem, a, b):
+    def get_new_stem(self, network_data, input_location, stem, l):
         def new_stem(Y):
             # TODO: After removing `[:, np.newaxis]` from _get_input can remove the `[:, 0]`
             input_ = self._get_input(input_location, network_data, None)[:, 0]
-            return (cp.dot(Y, self.W.T)[:, input_location[1] + 1] - cp.sum(network_data[0][0].get_output()*self.W[input_location[1] + 1, :], axis=1))*input_*(1 - input_)
+            return (cp.dot(Y, self.W.T)[:, l] - cp.sum(network_data[0][0].get_output()*self.W[l, :], axis=1))*input_*(1 - input_)
         return new_stem
 
 
