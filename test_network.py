@@ -10,7 +10,7 @@ class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = Network([[Softmax(2, [(1, 0), (1, 1), 0])],
                                 [SingleNeuron([(2, 0), (2, 1)]),
-                                 SingleNeuron([(2, 0), (2, 1)])],
+                                 SingleNeuron([(2, 1)])],
                                 [SingleNeuron([0, 1]), SingleNeuron([0, 1])]])
 
         self.w_data = [
